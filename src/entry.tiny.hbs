@@ -1,0 +1,30 @@
+{{#each imports }}
+import { default as C_{{{ @index }}}, register as R_{{{ @index }}} } from {{{@json svelte }}};
+{{/each}}
+import { registerHelper } from '@eslym/rs4r/internal';
+
+window.RS4R = window.SR4R || {};
+
+if(!window.RS4R[{{{ @json package.name }}}]) {
+    const entries = {
+    {{#each imports }}
+        {{{@json name }}}: { component: C_{{{@index}}}, register: R_{{{@index}}} },
+    {{/each}}
+    };
+    window.RS4R[{{{@json package.name }}}] = {
+        entries,
+        meta: {
+            version: {{{@json package.version }}},
+        },
+        register: function(name) {
+            registerHelper({
+                name:{{{@json package.name }}},
+                version:{{{@json package.version }}}
+            }, entries, name)
+        },
+    }
+} else {
+    console.warn(`RS4R: Package ${ {{{@json package.name }}} } already exists.`)
+}
+
+export default window.RS4R[{{{@json package.name }}}];

@@ -1,0 +1,9 @@
+
+((styles)=>{
+    for(const style of styles){
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `resources/${ {{{@json package.name }}} }/${style}`;
+        document.head.appendChild(link);
+    }
+})({{{@json styles }}});

@@ -1,0 +1,10 @@
+.DS_Store
+node_modules
+dist
+.debug
+**/*.hbs
+
+example/node_modules
+example/dist
+example/.debug
+example/yarn.lock

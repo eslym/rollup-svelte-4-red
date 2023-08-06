@@ -1,0 +1,19 @@
+{
+    "version": "1.0.0",
+    "description": "Example Project",
+    "type": "commonjs",
+    "main": "index.js",
+    "license": "MIT",
+    "scripts": {
+        "build": "rollup -c",
+        "debug": "rollup -c && node-red --userDir ./.debug"
+    },
+    "devDependencies": {
+        "@eslym/rs4r": "^1.0.0",
+        "@types/node-red": "^1.3.1",
+        "node-red": "^3.0.2",
+        "rollup": "^3.27.2",
+        "svelte": "^4.1.2",
+        "svelte-integration-red": "^1.14.3"
+    }
+}
