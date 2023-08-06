@@ -2,6 +2,8 @@
 
 Build svelte for Node-RED with rollup, please check the [example](example) for usage.
 
+This project is inspired by and compatible with [svelte-integration-red](https://gitlab.com/2WeltenChris/svelte-integration-red), please check it out for svelte components.
+
 ## Directory structure
 
 -   package.json
