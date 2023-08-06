@@ -4,12 +4,14 @@ import resolve from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import commonjs from '@rollup/plugin-commonjs';
 import alias from '@rollup/plugin-alias';
+import virtual from '@rollup/plugin-virtual';
 import css from 'rollup-plugin-import-css';
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import entryTemplate from './entry.tiny.hbs';
 import htmlTemplate from './html.tiny.hbs';
+import packageTemplate from './package.tiny.hbs';
 import injectCss from './css.tiny.hbs';
 import { globSync as glob } from 'glob';
 import { normalizePath } from '@rollup/pluginutils';
@@ -104,8 +106,6 @@ export default function makeConfig(options: Options): RollupOptions[] {
         styles: [] as string[]
     };
 
-    const entryId = path.resolve('bundle.js');
-
     const buildNodeEditor: Plugin = {
         name: 'node-red-editor-build',
 
@@ -115,28 +115,7 @@ export default function makeConfig(options: Options): RollupOptions[] {
             }
         },
 
-        resolveId(source, importer) {
-            if (source === './bundle.js' && importer === undefined) {
-                return {
-                    id: entryId
-                };
-            }
-            return null;
-        },
-
         load(id) {
-            if (id === entryId) {
-                return entryTemplate(
-                    {
-                        package: {
-                            name: pkg.name,
-                            version: pkg.version
-                        },
-                        imports: Object.values(nodeMap)
-                    },
-                    { json: JSON.stringify }
-                );
-            }
             if (!id.endsWith('?red-icon')) return null;
             const realPath = id.slice(0, -9);
             const basename = path.basename(realPath);
@@ -249,13 +228,15 @@ export default function makeConfig(options: Options): RollupOptions[] {
         }
     };
 
+    const $package = packageTemplate(pkg, { json: JSON.stringify });
+
     return [
         {
-            input: './bundle.js',
+            input: 'bundle.js',
             output: {
                 dir: path.join(opts.outDir, 'resources'),
                 format: 'esm',
-                entryFileNames: '[name]-[hash].js',
+                entryFileNames: 'bundle-[hash].js',
                 chunkFileNames: 'chunk-[hash].js',
                 assetFileNames: '[name]-[hash][extname]',
                 sourcemap: opts.sourceMap
@@ -282,8 +263,25 @@ export default function makeConfig(options: Options): RollupOptions[] {
                         {
                             find: '$editor',
                             replacement: path.resolve(editorLibDir)
+                        },
+                        {
+                            find: '$package.json',
+                            replacement: path.resolve('./package.js')
                         }
                     ]
+                }),
+                virtual({
+                    'bundle.js': entryTemplate(
+                        {
+                            package: {
+                                name: pkg.name,
+                                version: pkg.version
+                            },
+                            imports: Object.values(nodeMap)
+                        },
+                        { json: JSON.stringify }
+                    ),
+                    'package.js': $package
                 }),
                 commonjs(),
                 css(),
@@ -316,8 +314,15 @@ export default function makeConfig(options: Options): RollupOptions[] {
                         {
                             find: '$lib',
                             replacement: path.resolve(libDir)
+                        },
+                        {
+                            find: '$package.json',
+                            replacement: path.resolve('./package.js')
                         }
                     ]
+                }),
+                virtual({
+                    'package.js': $package
                 }),
                 postBuild
             ],

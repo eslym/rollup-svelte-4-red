@@ -7,7 +7,6 @@ export default function (RED) {
         this.name = config.name;
     }
 
-    // __NODE_NAME__ is 'example.config' in this case
     RED.nodes.registerType(__NODE_NAME__, ConfigNode, {
         credentials: {
             password: { type: 'password' }

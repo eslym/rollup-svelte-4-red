@@ -1,10 +1,15 @@
 <script context="module">
+    import { version } from '$package.json';
+
     export function register(render, update, revert) {
         RED.nodes.registerType(__NODE_NAME__, {
             category: 'config',
             defaults: {
                 name: {
                     value: ''
+                },
+                _version: {
+                    value: version
                 }
             },
             credentials: {

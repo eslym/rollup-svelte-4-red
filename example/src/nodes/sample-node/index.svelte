@@ -1,5 +1,6 @@
 <script context="module">
-    import icon from '../../../../res/sample.png?red-icon';
+    import { version } from '$package.json';
+    import icon from '$editor/icons/sample.png?red-icon';
 
     export function register(render, update, revert) {
         RED.nodes.registerType(__NODE_NAME__, {
@@ -14,8 +15,11 @@
                 },
                 config: {
                     value: '',
-                    type: 'example.config',
+                    type: 'sample-config',
                     required: true
+                },
+                _version: {
+                    value: version
                 }
             },
             label() {

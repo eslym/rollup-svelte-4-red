@@ -7,6 +7,5 @@ export default function (RED) {
         this.name = config.name;
     }
 
-    // __NODE_NAME__ is 'example.sample-node' in this case
     RED.nodes.registerType(__NODE_NAME__, ConfigNode);
 }
