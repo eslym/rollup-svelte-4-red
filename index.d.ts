@@ -9,7 +9,7 @@ declare module '@eslym/rs4r' {
         editorLibDir?: string;
         rollupPlugins?: InputPluginOption[];
         svelteOptions?: Omit<Parameters<typeof svelte>[0], 'compilerOptions'>;
-        packageNameOverride?: string;
+        packageJsonOverride?: Record<string, any>;
         editorExternalDeps?: ExternalOption;
         nodeExternalDeps?: ExternalOption;
         sourceMap?: boolean;

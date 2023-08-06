@@ -21,7 +21,7 @@ export type Options = {
     editorLibDir?: string;
     rollupPlugins?: InputPluginOption[];
     svelteOptions?: Omit<Parameters<typeof svelte>[0], 'compilerOptions'>;
-    packageNameOverride?: string;
+    packageJsonOverride?: Record<string, any>;
     editorExternalDeps?: ExternalOption;
     nodeExternalDeps?: ExternalOption;
     sourceMap?: boolean;
@@ -38,7 +38,7 @@ function stripExt(file: string) {
 }
 
 export default function makeConfig(options: Options): RollupOptions[] {
-    const opts: Required<Omit<Options, 'packageNameOverride' | 'libDir' | 'editorLibDir'>> = {
+    const opts: Required<Omit<Options, 'packageJsonOverride' | 'libDir' | 'editorLibDir'>> = {
         nodeSrc: './src/nodes',
         outDir: './dist',
         rollupPlugins: [],
@@ -53,7 +53,9 @@ export default function makeConfig(options: Options): RollupOptions[] {
     const editorLibDir = options.editorLibDir ?? './src/editor';
     const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
-    pkg.name = options.packageNameOverride ?? pkg.name;
+    for (const [key, value] of Object.entries(options.packageJsonOverride ?? {})) {
+        pkg[key] = value;
+    }
 
     const search = path.join(opts.nodeSrc, '*/**/index.{js,ts}');
     const nodeSource = glob(normalizePath(search));
