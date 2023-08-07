@@ -26,7 +26,8 @@ export type Options = {
     packageJsonOverride?: Record<string, any>;
     editorExternalDeps?: ExternalOption;
     nodeExternalDeps?: ExternalOption;
-    sourceMap?: boolean;
+    readme?: string | false;
+    sourceMap?: boolean | 'inline' | 'hidden';
     clean?: boolean;
 };
 
@@ -48,6 +49,7 @@ export default function makeConfig(options: Options): RollupOptions[] {
         editorExternalDeps: [],
         nodeExternalDeps: [],
         sourceMap: false,
+        readme: 'README.md',
         clean: true,
         ...options
     };
@@ -225,6 +227,13 @@ export default function makeConfig(options: Options): RollupOptions[] {
                 fileName: 'package.json',
                 source: JSON.stringify(pkg, null, 2)
             });
+            if (typeof opts.readme === 'string') {
+                this.emitFile({
+                    type: 'asset',
+                    fileName: 'README.md',
+                    source: fs.readFileSync(opts.readme, 'utf8')
+                });
+            }
         }
     };
 

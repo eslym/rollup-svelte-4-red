@@ -12,7 +12,8 @@ declare module '@eslym/rs4r' {
         packageJsonOverride?: Record<string, any>;
         editorExternalDeps?: ExternalOption;
         nodeExternalDeps?: ExternalOption;
-        sourceMap?: boolean;
+        readme?: string | false;
+        sourceMap?: boolean | 'inline' | 'hidden';
         clean?: boolean;
     };
 
