@@ -3,8 +3,11 @@
         "baseUrl": ".",
         "paths": {
             "$lib/*": ["./src/lib/*"],
-            "$editor/*": ["./src/editor/*"]
-        }
+            "$editor/*": ["./src/editor/*"],
+            "$shared/*": ["./src/shared/*"],
+            "$package.json": ["./package.json"]
+        },
+        "types": ["node-red", "jquery"]
     },
-    "include": ["types.d.ts", "src/**/*.{js,ts,svelte}"]
+    "include": ["types.d.ts", "src/**/*.js", "src/**/*.svelte", "package.json"]
 }

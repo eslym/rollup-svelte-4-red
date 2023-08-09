@@ -1,6 +1,6 @@
 import type { EditorRED } from 'node-red';
 import type JQuery from 'jquery';
-import type { ComponentType } from 'svelte';
+import type { ComponentType, SvelteComponent } from 'svelte';
 import isEqual from 'lodash.isequal';
 
 declare global {
@@ -29,6 +29,7 @@ interface Entries {
 }
 
 const nodeData = new WeakMap<any, any>();
+const nodeEditor = new WeakMap<any, SvelteComponent>();
 
 function updateConfigUsers(oldConfig: string, newConfig: string, userId: string) {
     const oldConfigNode = RED.nodes.node(oldConfig) as any;
@@ -57,11 +58,12 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                 const cloned = window.$.extend(true, {}, node);
                 nodeData.set(node, cloned);
             }
-            let target = document.getElementById(`${pack.name}/${name}`)!;
-            new component({
+            const target = document.getElementById(`${pack.name}/${name}`)!;
+            const instance = new component({
                 target: target,
                 props: { node: nodeData.get(node) }
             });
+            nodeEditor.set(node, instance);
             target.style.width = minWidth;
             const nodeIsSidebarTab = !!node.onchange;
             if (!nodeIsSidebarTab) {
@@ -78,6 +80,10 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
     };
 
     const update = function (node: any) {
+        if (nodeEditor.has(node)) {
+            const instance = nodeEditor.get(node)!;
+            instance.$destroy();
+        }
         if (nodeData.has(node)) {
             const clone = nodeData.get(node);
             nodeData.delete(node);
@@ -114,6 +120,10 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
     };
 
     const revert = function (node: any) {
+        if (nodeEditor.has(node)) {
+            const instance = nodeEditor.get(node)!;
+            instance.$destroy();
+        }
         if (node.__clone) {
             delete node.__clone;
         }

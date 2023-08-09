@@ -7,6 +7,7 @@ declare module '@eslym/rs4r' {
         outDir?: string;
         libDir?: string;
         editorLibDir?: string;
+        examplesDir?: string | false;
         rollupPlugins?: InputPluginOption[];
         svelteOptions?: Omit<Parameters<typeof svelte>[0], 'compilerOptions'>;
         packageJsonOverride?: Record<string, any>;

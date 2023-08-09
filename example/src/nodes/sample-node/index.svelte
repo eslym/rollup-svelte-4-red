@@ -1,6 +1,7 @@
 <script context="module">
     import { version } from '$package.json';
     import icon from '$editor/icons/sample.png?red-icon';
+    import example from '$editor/res/example.png?red-res';
 
     export function register(render, update, revert) {
         RED.nodes.registerType(__NODE_NAME__, {
@@ -48,3 +49,4 @@
 
 <Input bind:node type="text" prop="name" label="Name" />
 <Input bind:node type="config" prop="config" label="Config" />
+<img src={example} alt="example" />

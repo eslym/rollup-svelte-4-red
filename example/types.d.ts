@@ -11,6 +11,11 @@ declare module '*?red-icon' {
     export default icon;
 }
 
+declare module '*?red-res' {
+    const path: string;
+    export default path;
+}
+
 declare module '$package.json' {
     export const name: JSONSchemaForNPMPackageJsonFiles['name'];
     export const version: JSONSchemaForNPMPackageJsonFiles['version'];

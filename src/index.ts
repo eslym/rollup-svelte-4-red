@@ -20,6 +20,8 @@ export type Options = {
     nodeSrc?: string;
     outDir?: string;
     libDir?: string;
+    sharedLibDir?: string;
+    examplesDir?: string | false;
     editorLibDir?: string;
     rollupPlugins?: InputPluginOption[];
     svelteOptions?: Omit<Parameters<typeof svelte>[0], 'compilerOptions'>;
@@ -41,9 +43,12 @@ function stripExt(file: string) {
 }
 
 export default function makeConfig(options: Options): RollupOptions[] {
-    const opts: Required<Omit<Options, 'packageJsonOverride' | 'libDir' | 'editorLibDir'>> = {
+    const opts: Required<
+        Omit<Options, 'packageJsonOverride' | 'libDir' | 'editorLibDir' | 'sharedLibDir'>
+    > = {
         nodeSrc: './src/nodes',
         outDir: './dist',
+        examplesDir: './examples',
         rollupPlugins: [],
         svelteOptions: {},
         editorExternalDeps: [],
@@ -55,6 +60,7 @@ export default function makeConfig(options: Options): RollupOptions[] {
     };
     const libDir = options.libDir ?? './src/lib';
     const editorLibDir = options.editorLibDir ?? './src/editor';
+    const sharedLibDir = options.sharedLibDir ?? './src/shared';
     const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
     for (const [key, value] of Object.entries(options.packageJsonOverride ?? {})) {
@@ -118,19 +124,34 @@ export default function makeConfig(options: Options): RollupOptions[] {
         },
 
         load(id) {
-            if (!id.endsWith('?red-icon')) return null;
-            const realPath = id.slice(0, -9);
-            const basename = path.basename(realPath);
-            const buffer = fs.readFileSync(realPath);
-            const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8);
-            const name = `${stripExt(basename)}-${hash}${path.extname(basename)}`;
-            nodeRedIcons.set(id, {
-                type: 'asset',
-                name: basename,
-                fileName: `icons/${name}`,
-                source: buffer
-            });
-            return `export default ${JSON.stringify(name)};`;
+            if (id.endsWith('?red-icon')) {
+                const realPath = id.slice(0, -9);
+                const basename = path.basename(realPath);
+                const buffer = fs.readFileSync(realPath);
+                const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8);
+                const name = `${stripExt(basename)}-${hash}${path.extname(basename)}`;
+                nodeRedIcons.set(id, {
+                    type: 'asset',
+                    name: basename,
+                    fileName: `icons/${name}`,
+                    source: buffer
+                });
+                return `export default ${JSON.stringify(name)};`;
+            }
+            if (id.endsWith('?red-res')) {
+                const realPath = id.slice(0, -8);
+                const basename = path.basename(realPath);
+                const buffer = fs.readFileSync(realPath);
+                const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8);
+                const name = `assets/${stripExt(basename)}-${hash}${path.extname(basename)}`;
+                this.emitFile({
+                    type: 'asset',
+                    name: basename,
+                    fileName: name,
+                    source: buffer
+                });
+                return `export default ${JSON.stringify(`resources/${pkg.name}/${name}`)};`;
+            }
         },
 
         writeBundle(_, bundle) {
@@ -143,7 +164,10 @@ export default function makeConfig(options: Options): RollupOptions[] {
                         break;
                     }
                     case 'asset': {
-                        if (path.extname(chunk.fileName) === '.css') {
+                        if (
+                            path.extname(chunk.fileName) === '.css' &&
+                            !chunk.fileName.startsWith(`resources/${pkg.name}/assets/`)
+                        ) {
                             resources.styles.push(chunk.fileName);
                         }
                     }
@@ -234,6 +258,18 @@ export default function makeConfig(options: Options): RollupOptions[] {
                     source: fs.readFileSync(opts.readme, 'utf8')
                 });
             }
+            if (typeof opts.examplesDir === 'string') {
+                const examples = glob(normalizePath(path.join(opts.examplesDir, '**/*')));
+                for (const example of examples) {
+                    const relative = path.relative(opts.examplesDir, example);
+                    const buffer = fs.readFileSync(example);
+                    this.emitFile({
+                        type: 'asset',
+                        fileName: `examples/${relative}`,
+                        source: buffer
+                    });
+                }
+            }
         }
     };
 
@@ -272,6 +308,10 @@ export default function makeConfig(options: Options): RollupOptions[] {
                         {
                             find: '$editor',
                             replacement: path.resolve(editorLibDir)
+                        },
+                        {
+                            find: '$shared',
+                            replacement: path.resolve(sharedLibDir)
                         },
                         {
                             find: '$package.json',
@@ -323,6 +363,10 @@ export default function makeConfig(options: Options): RollupOptions[] {
                         {
                             find: '$lib',
                             replacement: path.resolve(libDir)
+                        },
+                        {
+                            find: '$shared',
+                            replacement: path.resolve(sharedLibDir)
                         },
                         {
                             find: '$package.json',
