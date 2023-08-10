@@ -101,13 +101,13 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                 updated = true;
                 node[key] = clone[key];
             }
-            if (node._) {
+            if (node.credentials) {
                 const credentialKeys = Object.keys(node._def.credentials || {});
-                for (const key of Object.keys(clone._)) {
-                    if (credentialKeys.indexOf(key) === -1) continue;
-                    if (isEqual(node._[key], clone._[key])) continue;
+                for (const key of Object.keys(clone.credentials)) {
+                    if (key === '_' || credentialKeys.indexOf(key) === -1) continue;
+                    if (isEqual(node.credentials[key], clone.credentials[key])) continue;
                     updated = true;
-                    node._[key] = clone._[key];
+                    node.credentials[key] = clone.credentials[key];
                 }
             }
             if (updated) {
@@ -124,8 +124,8 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
             const instance = nodeEditor.get(node)!;
             instance.$destroy();
         }
-        if (node.__clone) {
-            delete node.__clone;
+        if (nodeData.has(node)) {
+            nodeData.delete(node);
         }
     };
 
