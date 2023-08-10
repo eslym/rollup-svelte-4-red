@@ -10,7 +10,9 @@ const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 const opts = {
     input: {
         index: 'src/index.ts',
-        internal: 'src/internal.ts'
+        internal: 'src/internal.ts',
+        runtime: 'src/runtime.ts',
+        tray: 'src/tray.ts'
     },
     plugins: [
         typescript(),
@@ -20,7 +22,7 @@ const opts = {
             extensions: ['.tiny.hbs']
         })
     ],
-    external: [...Object.keys(pkg.dependencies || {}), ...builtinModules, /^node:/]
+    external: [...Object.keys(pkg.dependencies || {}), ...builtinModules, /^node:/, '$package.json']
 };
 
 /** @type {import('rollup').OutputOptions[]} */

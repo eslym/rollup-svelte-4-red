@@ -20,3 +20,39 @@ declare module '@eslym/rs4r' {
 
     export default function makeConfig(options: Options): RollupOptions[];
 }
+
+declare module '@eslym/rs4r/runtime' {
+    export const editingNodeContextKey: Symbol;
+}
+
+declare module '@eslym/rs4r/tray' {
+    import { ComponentType } from 'svelte';
+
+    export interface OpenTrayOptions<T extends Record<string, any>> {
+        props?: T;
+        binding?: {
+            [K in keyof T]: (value: T[K]) => void;
+        };
+        context?: Map<any, any>;
+        on?: Record<string, (event: CustomEvent) => void>;
+        title?: string;
+        width?: string | number;
+        maximized?: boolean;
+        buttons?: {
+            text: string;
+            class?: string;
+            click?: () => void;
+        }[];
+        show?: () => void;
+    }
+
+    export function openTray<T extends Record<string, any>>(
+        component: ComponentType,
+        options: OpenTrayOptions<T>
+    ): void;
+
+    export function openTypeEditor<T extends Record<string, any>>(
+        component: ComponentType,
+        options: OpenTrayOptions<T>
+    ): void;
+}

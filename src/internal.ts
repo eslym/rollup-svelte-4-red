@@ -2,6 +2,8 @@ import type { EditorRED } from 'node-red';
 import type JQuery from 'jquery';
 import type { ComponentType, SvelteComponent } from 'svelte';
 import isEqual from 'lodash.isequal';
+import { writable } from 'svelte/store';
+import { editingNodeContextKey } from './runtime';
 
 declare global {
     interface Window {
@@ -58,12 +60,34 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                 const cloned = window.$.extend(true, {}, node);
                 nodeData.set(node, cloned);
             }
+            const cloned = nodeData.get(node);
             const target = document.getElementById(`${pack.name}/${name}`)!;
+            const nodeStore = writable(cloned);
+            const ctx = new Map([[editingNodeContextKey, nodeStore]]);
             const instance = new component({
                 target: target,
-                props: { node: nodeData.get(node) }
+                props: { node: cloned },
+                context: ctx
             });
+
+            // Manually bind:node
+            // equivalent: bind:node={$nodeStore}
+            const index = instance.$$?.props?.node;
+            if (index !== undefined) {
+                instance.$$.bound[index] = (value: any) => {
+                    nodeStore.set(value);
+                };
+                instance.$$.on_destroy.push(
+                    nodeStore.subscribe((value: any) => {
+                        instance.$set({
+                            node: value
+                        });
+                    })
+                );
+            }
+
             nodeEditor.set(node, instance);
+
             target.style.width = minWidth;
             const nodeIsSidebarTab = !!node.onchange;
             if (!nodeIsSidebarTab) {

@@ -4,3 +4,7 @@ declare module '*.tiny.hbs' {
     const template: TinybarsFunc;
     export default template;
 }
+
+declare module '$package.json' {
+    export const name: string;
+}

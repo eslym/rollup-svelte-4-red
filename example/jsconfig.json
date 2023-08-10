@@ -9,5 +9,5 @@
         },
         "types": ["node-red", "jquery"]
     },
-    "include": ["types.d.ts", "src/**/*.js", "src/**/*.svelte", "package.json"]
+    "include": ["types.d.ts", "global.d.ts", "src/**/*.js", "src/**/*.svelte", "package.json"]
 }

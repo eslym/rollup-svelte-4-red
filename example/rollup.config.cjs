@@ -1,4 +1,5 @@
 const rs4r = require('@eslym/rs4r');
+const json = require('@rollup/plugin-json');
 
 module.exports = rs4r({
     packageJsonOverride: {
@@ -6,5 +7,6 @@ module.exports = rs4r({
         scripts: {},
         devDependencies: {}
     },
-    sourceMap: true
+    sourceMap: true,
+    rollupPlugins: [json()]
 });
