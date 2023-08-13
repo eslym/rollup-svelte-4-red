@@ -46,7 +46,7 @@
 </script>
 
 <script>
-    import { Input } from 'svelte-integration-red/components';
+    import { Input, Icon, Row } from '@eslym/rs4r/components';
     import { JSONEditor } from 'svelte-jsoneditor';
     import { openTypeEditor } from '@eslym/rs4r/tray';
 
@@ -81,20 +81,34 @@
     }
 </script>
 
-<Input bind:node type="text" prop="name" label="Name" />
-<Input bind:node type="config" prop="config" label="Config" />
+<Input icon={{ fa4: 'tag' }} prop="name" label="Name" />
+<Input icon={{ fa4: 'gear' }} prop="config" label="Config" />
 
-<label>
-    Some JSON Value<br />
-    <textarea bind:value={node.json} />
-</label>
-<button on:click={openEditor}>Open Editor</button>
+<Row>
+    <label>
+        Some JSON Value<br />
+        <textarea bind:value={node.json} />
+        <button class="red-ui-button red-ui-button-small" on:click={openEditor}>
+            Open Editor <Icon icon={{ fa4: 'external-link' }} />
+        </button>
+    </label>
+</Row>
 
-<img src={example} alt="example" />
+<div>
+    <img src={example} alt="example" />
+</div>
 
 <style>
+    label {
+        display: block;
+        width: 100%;
+    }
     textarea {
         width: 100%;
         resize: vertical;
+        margin: 0;
+    }
+    img {
+        min-width: 300px;
     }
 </style>

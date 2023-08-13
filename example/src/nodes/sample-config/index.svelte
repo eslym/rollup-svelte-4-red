@@ -15,7 +15,8 @@
             credentials: {
                 password: {
                     type: 'password',
-                    label: 'Password'
+                    label: 'Password',
+                    required: true
                 }
             },
             label() {
@@ -37,10 +38,8 @@
 </script>
 
 <script>
-    import { Input } from 'svelte-integration-red/components';
-
-    export let node;
+    import { Input } from '@eslym/rs4r/components';
 </script>
 
-<Input bind:node type="text" prop="name" label="Name" />
-<Input bind:node type="password" prop="password" label="Password" credentials />
+<Input type="text" prop="name" label="Name" />
+<Input type="password" prop="password" label="Password" />

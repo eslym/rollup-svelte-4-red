@@ -1,4 +1,4 @@
-import { type ComponentType, SvelteComponent } from 'svelte';
+import type { ComponentType, SvelteComponent } from 'svelte';
 import { name } from '$package.json';
 
 export interface OpenTrayOptions<T extends Record<string, any>> {

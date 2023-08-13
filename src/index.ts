@@ -292,10 +292,13 @@ export default function makeConfig(options: Options): RollupOptions[] {
                     emitCss: true,
                     ...opts.svelteOptions
                 }),
+                commonjs(),
                 resolve({
                     browser: true,
                     dedupe: (importee) => importee === 'svelte' || importee.startsWith('svelte/'),
-                    preferBuiltins: false
+                    preferBuiltins: false,
+                    exportConditions: ['svelte'],
+                    extensions: ['.svelte', '.js', '.cjs', '.mjs']
                 }),
                 replace({
                     values: {
@@ -332,7 +335,6 @@ export default function makeConfig(options: Options): RollupOptions[] {
                     ),
                     'package.js': $package
                 }),
-                commonjs(),
                 css(),
                 buildNodeEditor
             ],

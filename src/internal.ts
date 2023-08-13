@@ -132,6 +132,9 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                     if (isEqual(node.credentials[key], clone.credentials[key])) continue;
                     updated = true;
                     node.credentials[key] = clone.credentials[key];
+                    if (node._def.credentials[key].type === 'password') {
+                        node.credentials[`has_${key}`] = !!node.credentials[key];
+                    }
                 }
             }
             if (updated) {

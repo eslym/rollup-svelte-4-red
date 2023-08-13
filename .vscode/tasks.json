@@ -8,6 +8,17 @@
             "problemMatcher": [],
             "label": "npm: build",
             "detail": "rollup -c"
+        },
+        {
+            "type": "npm",
+            "script": "build",
+            "group": "build",
+            "problemMatcher": [],
+            "label": "npm: build example",
+            "detail": "rollup -c",
+            "options": {
+                "cwd": "${workspaceFolder}/example"
+            }
         }
     ]
 }
