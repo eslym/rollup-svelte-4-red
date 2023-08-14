@@ -97,6 +97,7 @@
         {disabled}
         {required}
         class={className}
+        autocomplete="off"
         on:change
         on:click
         on:focus

@@ -46,11 +46,38 @@
 </script>
 
 <script>
-    import { Input, Icon, Row } from '@eslym/rs4r/components';
+    import { Input, Icon, Row, menu } from '@eslym/rs4r/components';
     import { JSONEditor } from 'svelte-jsoneditor';
     import { openTypeEditor } from '@eslym/rs4r/tray';
 
     export let node;
+
+    let animal = '';
+    let autocompleteShown = false;
+
+    // 20 examples of animal
+    let animals = [
+        'Dog',
+        'Cat',
+        'Elephant',
+        'Lion',
+        'Giraffe',
+        'Dolphin',
+        'Kangaroo',
+        'Penguin',
+        'Tiger',
+        'Panda',
+        'Zebra',
+        'Gorilla',
+        'Horse',
+        'Cheetah',
+        'Snake',
+        'Raccoon',
+        'Squirrel',
+        'Ostrich',
+        'Octopus',
+        'Koala'
+    ].sort();
 
     function openEditor() {
         openTypeEditor(JSONEditor, {
@@ -79,18 +106,49 @@
             ]
         });
     }
+
+    function filterAnimals(value) {
+        return animals.filter((animal) => animal.toLowerCase().startsWith(value.toLowerCase()));
+    }
 </script>
 
 <Input icon={{ fa4: 'tag' }} prop="name" label="Name" />
 <Input icon={{ fa4: 'gear' }} prop="config" label="Config" />
+<Row>
+    <label for={undefined}>Autocomplete</label>
+    <input
+        class="animal"
+        type="text"
+        autocomplete="off"
+        bind:value={animal}
+        on:keydown={() => (autocompleteShown = true)}
+        use:menu={{
+            show: autocompleteShown,
+            options: filterAnimals(animal),
+            width: '200px',
+            maxHeight: '300px',
+            onclose(_, input) {
+                autocompleteShown = false;
+                input.focus();
+            },
+            onselect(val, input) {
+                animal = val;
+                autocompleteShown = false;
+                input.focus();
+            }
+        }}
+    />
+</Row>
 
 <Row>
-    <label>
+    <label class="textareea">
         Some JSON Value<br />
-        <textarea bind:value={node.json} />
-        <button class="red-ui-button red-ui-button-small" on:click={openEditor}>
-            Open Editor <Icon icon={{ fa4: 'external-link' }} />
-        </button>
+        <textarea bind:value={node.json} readonly />
+        <div>
+            <button type="button" class="red-ui-button" on:click={openEditor}>
+                Open Editor <Icon icon={{ fa4: 'external-link' }} />
+            </button>
+        </div>
     </label>
 </Row>
 
@@ -99,7 +157,10 @@
 </div>
 
 <style>
-    label {
+    input.animal {
+        flex-grow: 1;
+    }
+    label.textareea {
         display: block;
         width: 100%;
     }
@@ -107,6 +168,7 @@
         width: 100%;
         resize: vertical;
         margin: 0;
+        min-height: 50px;
     }
     img {
         min-width: 300px;

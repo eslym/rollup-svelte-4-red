@@ -167,5 +167,6 @@
     label.in-row > :global(select),
     label.in-row > :global(textarea) {
         flex-grow: 1;
+        margin: 0;
     }
 </style>

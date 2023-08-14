@@ -2,6 +2,25 @@ import { SvelteComponent } from 'svelte';
 
 export type IconSource = { fa4: FronAwesome4Icons };
 
+export interface MenuOptions {
+    show?: boolean;
+    options: (
+        | {
+              label: string;
+              value: any;
+              onselect: (target: HTMLElement) => void;
+          }
+        | string
+    )[];
+    style?: 'compact';
+    maxHeight?: string;
+    width?: string;
+    align?: 'left' | 'right';
+    offset?: [number, number];
+    onclose?: (cancelled: boolean, target: HTMLElement) => void;
+    onselect?: (value: any, target: HTMLElement) => void;
+}
+
 export class Row extends SvelteComponent<{
     class?: string | Record<string, boolean>;
 }> {}
@@ -39,6 +58,26 @@ export class Icon extends SvelteComponent<
     },
     {}
 > {}
+
+/**
+ * Wrapper for RED.popover.tooltip
+ * @param element target element
+ * @param tooltip tooltip text
+ */
+export function tooltip(
+    element: HTMLElement,
+    tooltip: string
+): { update(tooltip: string): void; destroy(): void };
+
+/**
+ * Wrapper for RED.popover.menu
+ * @param element target element
+ * @param options menu options
+ */
+export function menu(
+    element: HTMLElement,
+    options: MenuOptions
+): { update(options: MenuOptions); destroy(): void };
 
 type FronAwesome4Icons = [
     'address-book',

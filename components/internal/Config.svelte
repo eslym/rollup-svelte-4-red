@@ -53,6 +53,7 @@
 
 <script>
     import Icon from '../Icon.svelte';
+    import { tooltip } from './actions.mjs';
 
     export let value;
     export let type;
@@ -91,6 +92,8 @@
 
     $: labelAdd = RED._('editor.addNewConfig', { type: RED.utils.sanitize(type) });
 
+    $: _tooltip = $value ? RED._('editor.configEdit') : RED._('editor.configAdd');
+
     $: if (!checkType(type)) throw new Error(`Invalid input type ${type}`);
 </script>
 
@@ -102,6 +105,6 @@
     {/each}
     <option value={''}>{labelAdd}</option>
 </select>
-<button {disabled} on:click={editNode} class="red-ui-button">
-    <Icon icon={{ fa4: 'pencil' }} />
+<button use:tooltip={_tooltip} type="button" {disabled} on:click={editNode} class="red-ui-button">
+    <Icon icon={{ fa4: $value ? 'pencil' : 'plus' }} />
 </button>

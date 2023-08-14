@@ -20,6 +20,16 @@ export interface OpenTrayOptions<T extends Record<string, any>> {
     close?: () => void;
 }
 
+function createEditorTrap(id: string, type: string) {
+    const el = document.createElement('input');
+    el.id = id;
+    el.type = type;
+    el.style.position = 'absolute';
+    el.style.top = '-2000px';
+    el.style.zIndex = '-9999';
+    return el;
+}
+
 export function openTray<T extends Record<string, any>>(
     component: ComponentType,
     options: OpenTrayOptions<T>
@@ -35,12 +45,20 @@ export function openTray<T extends Record<string, any>>(
         buttons: options.buttons ?? [],
         open(tray: JQuery) {
             const container = tray.find('.red-ui-tray-body');
+            const form = document.createElement('form');
+            form.classList.add('form-horizontal');
+            form.autocomplete = 'off';
+            form.id = 'dialog-form';
+            container.append(form);
+
+            form.append(createEditorTrap('red-ui-trap-password', 'password'));
+            form.append(createEditorTrap('red-ui-trap-username', 'text'));
+            form.append(createEditorTrap('red-ui-trap-user', 'text'));
+
             const target = document.createElement('div');
-            target.style.width = '100%';
             target.style.height = '100%';
-            target.style.padding = '1em';
-            target.style.boxSizing = 'border-box';
-            container.append(target);
+            target.style.width = '100%';
+            form.append(target);
             instance = new component({
                 target,
                 props: options.props,
