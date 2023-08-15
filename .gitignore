@@ -2,7 +2,3 @@ node_modules/
 dist/
 .debug/
 yarn.lock
-
-example/node_modules
-example/dist
-example/.debug

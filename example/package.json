@@ -6,7 +6,7 @@
     "license": "MIT",
     "scripts": {
         "build": "rollup -c",
-        "debug": "rollup -c && node-red --userDir ./.debug"
+        "debug": "rollup -c && node-red --settings node-red-settings.js"
     },
     "devDependencies": {
         "@eslym/rs4r": "^1.2.0-beta.0",

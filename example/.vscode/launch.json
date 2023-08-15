@@ -7,22 +7,25 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug Rollup",
+            "name": "Build & Launch",
             "skipFiles": ["<node_internals>/**"],
-            "cwd": "${workspaceFolder}\\example",
-            "program": "${workspaceFolder}\\example\\node_modules\\rollup\\dist\\bin\\rollup",
-            "args": ["-c", "rollup.config.cjs"],
-            "preLaunchTask": "npm: build"
+            "program": "${workspaceFolder}/node_modules/node-red/red.js",
+            "cwd": "${workspaceFolder}",
+            "args": ["--settings", "${workspaceFolder}/debug-settings.js"],
+            "preLaunchTask": "npm: build",
+            "stopOnEntry": false,
+            "env": {
+                "NODE_ENV": "development"
+            }
         },
         {
             "type": "node",
             "request": "launch",
-            "name": "Debug Example",
+            "name": "Launch",
             "skipFiles": ["<node_internals>/**"],
-            "program": "${workspaceFolder}/example/node_modules/node-red/red.js",
-            "cwd": "${workspaceFolder}/example",
-            "args": ["--settings", "${workspaceFolder}/example/node-red-settings.js"],
-            "preLaunchTask": "npm: build example",
+            "program": "${workspaceFolder}/node_modules/node-red/red.js",
+            "cwd": "${workspaceFolder}",
+            "args": ["--settings", "${workspaceFolder}/node-red-settings.js"],
             "stopOnEntry": false,
             "env": {
                 "NODE_ENV": "development"
