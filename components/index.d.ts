@@ -107,20 +107,38 @@ export class Icon extends SvelteComponent<
  * @param element target element
  * @param tooltip tooltip text
  */
-export function tooltip(
-    element: HTMLElement,
-    tooltip: string
-): { update(tooltip: string): void; destroy(): void };
+export function tooltip(element: HTMLElement, tooltip: string): { destroy(): void };
 
 /**
  * Wrapper for RED.popover.menu
  * @param element target element
  * @param options menu options
  */
-export function menu(
+export function menu(element: HTMLElement, options: MenuOptions): { destroy(): void };
+
+/**
+ * Wrapper for ResizeObserver
+ * @param element target element
+ * @param callback callback function
+ */
+export function onresize(
     element: HTMLElement,
-    options: MenuOptions
-): { update(options: MenuOptions); destroy(): void };
+    callback: (entry: ResizeObserverEntry) => void
+): { destroy(): void };
+
+/**
+ * Wrapper for IntersectionObserver
+ * @param element target element
+ * @param options options
+ */
+export function onintersect(
+    element: HTMLElement,
+    options: (entry: IntersectionObserverEntry) =>
+        | void
+        | (IntersectionObserverInit & {
+              callback: (entry: IntersectionObserverEntry) => void;
+          })
+): { destroy(): void };
 
 type FronAwesome4Icons = [
     'address-book',

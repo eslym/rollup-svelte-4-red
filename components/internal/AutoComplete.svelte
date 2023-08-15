@@ -1,6 +1,7 @@
 <script>
     import { mergeClass } from './utils.mjs';
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, onMount, tick } from 'svelte';
+    import { onresize } from './actions.mjs';
 
     const dispatch = createEventDispatcher();
 
@@ -34,6 +35,7 @@
             _suggestions = suggestions;
             _resolving = false;
             _needResolve = false;
+            refreshPosition();
             return;
         }
         if (_resolving) {
@@ -44,8 +46,21 @@
         _needResolve = false;
         _suggestions = await suggestions($value);
         _resolving = false;
+        refreshPosition();
         if (_needResolve) {
             return refreshSuggestions();
+        }
+    }
+
+    async function refreshPosition() {
+        await tick();
+        const inputBounding = _input.getBoundingClientRect();
+        const divBounding = _div.getBoundingClientRect();
+        const inputBottom = inputBounding.top + inputBounding.height;
+        if (inputBottom + divBounding.height > window.innerHeight) {
+            _div.style.top = `${inputBounding.top - divBounding.height}px`;
+        } else {
+            _div.style.top = `${inputBottom}px`;
         }
     }
 
@@ -78,9 +93,10 @@
             event.key === 'Backspace' ||
             event.key === 'Delete' ||
             event.key === 'ArrowDown'
-        )
+        ) {
             showSuggestions = true;
-        else if (event.key === 'Escape') showSuggestions = false;
+            refreshPosition();
+        } else if (event.key === 'Escape') showSuggestions = false;
     }
 
     function selectionKeydown(ev) {
@@ -135,6 +151,10 @@
         _value = $value;
         refreshSuggestions();
     }
+
+    onMount(() => {
+        _div.style.width = `${_input.offsetWidth}px`;
+    });
 </script>
 
 <div class="rs4r-autocomplete" on:focusin={focusIn} on:focusout={focusOut}>
@@ -153,30 +173,29 @@
         on:keydown={inputKeydown}
         on:keyup
         on:input
+        use:onresize={() => (_div.style.width = `${_input.offsetWidth}px`)}
     />
-    <div class="rs4r-suggestions-wrapper" class:rs4r-shown={suggestionShown}>
-        <div bind:this={_div} class="rs4r-suggestions">
-            {#each _suggestions as suggestion}
-                <button
-                    type="button"
-                    tabindex="-1"
-                    on:click={applySuggestion(
-                        typeof suggestion === 'string' ? suggestion : suggestion.value
-                    )}
-                    on:keydown={selectionKeydown}
-                >
-                    {#if typeof suggestion === 'string'}
-                        {suggestion}
-                    {:else if typeof suggestion === 'object'}
-                        <svelte:component
-                            this={suggestion.component}
-                            input={value}
-                            {...suggestion.props ?? {}}
-                        />
-                    {/if}
-                </button>
-            {/each}
-        </div>
+    <div bind:this={_div} class="rs4r-suggestions" class:rs4r-shown={suggestionShown}>
+        {#each _suggestions as suggestion}
+            <button
+                type="button"
+                tabindex="-1"
+                on:click={applySuggestion(
+                    typeof suggestion === 'string' ? suggestion : suggestion.value
+                )}
+                on:keydown={selectionKeydown}
+            >
+                {#if typeof suggestion === 'string'}
+                    {suggestion}
+                {:else if typeof suggestion === 'object'}
+                    <svelte:component
+                        this={suggestion.component}
+                        input={value}
+                        {...suggestion.props ?? {}}
+                    />
+                {/if}
+            </button>
+        {/each}
     </div>
 </div>
 
@@ -186,14 +205,8 @@
         position: relative;
         box-sizing: border-box;
     }
-    .rs4r-suggestions-wrapper {
-        position: absolute;
-        display: none;
-    }
-    .rs4r-suggestions-wrapper.rs4r-shown {
-        display: block;
-    }
     .rs4r-suggestions {
+        display: none;
         position: fixed;
         z-index: 9999;
         background-color: var(--red-ui-form-input-background);
@@ -201,6 +214,9 @@
         color: var(--red-ui-form-text-color);
         max-height: 200px;
         overflow: auto;
+    }
+    .rs4r-suggestions.rs4r-shown {
+        display: block;
     }
     .rs4r-suggestions > button {
         all: unset;

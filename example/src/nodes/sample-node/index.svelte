@@ -23,6 +23,9 @@
                     value: 'null',
                     required: true
                 },
+                animal: {
+                    value: ''
+                },
                 _version: {
                     value: version
                 }
@@ -145,9 +148,6 @@
 
     export let node;
 
-    let animal = '';
-    let autocompleteShown = false;
-
     function openEditor() {
         openTypeEditor(JSONEditor, {
             title: 'Some JSON Value',
@@ -183,14 +183,19 @@
 
 <Input icon={{ fa4: 'tag' }} prop="name" label="Name" />
 <Input icon={{ fa4: 'gear' }} prop="config" label="Config" />
-<AutoComplete label="animal" suggestions={filterAnimals} bind:value={animal} />
+<AutoComplete label="Animal" prop="animal" suggestions={filterAnimals} />
 
 <Row>
     <label class="textarea">
         Some JSON Value<br />
         <textarea bind:value={node.json} readonly />
         <div>
-            <button use:tooltip={"Open in JSON editor"} type="button" class="red-ui-button" on:click={openEditor}>
+            <button
+                use:tooltip={'Open in JSON editor'}
+                type="button"
+                class="red-ui-button"
+                on:click={openEditor}
+            >
                 Open Editor <Icon icon={{ fa4: 'external-link' }} />
             </button>
         </div>

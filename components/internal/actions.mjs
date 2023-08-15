@@ -72,3 +72,80 @@ export function menu(element, options) {
         }
     };
 }
+
+/**
+ * Create a ResizeObserver on an element
+ * @param {HTMLElement} element
+ * @param {(entry: ResizeObserverEntry)=>void} callback
+ */
+export function onresize(element, callback) {
+    let cb = callback;
+    let observer = new ResizeObserver((entries) => {
+        entries.forEach((e) => cb(e));
+    });
+    observer.observe(element);
+    return {
+        update(callback) {
+            cb = callback;
+        },
+        destroy() {
+            observer.disconnect();
+        }
+    };
+}
+
+/**
+ *
+ * @param {HTMLElement} element
+ * @param {(entry: IntersectionObserverEntry)=>void|(IntersectionObserverInit & {callback: (entry: IntersectionObserverEntry)=>void})} options
+ * @returns
+ */
+export function onintersect(element, options) {
+    let opts = intersectOptions(options);
+
+    let observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((e) => opts.callback(e));
+        },
+        {
+            root: opts.root,
+            rootMargin: opts.rootMargin,
+            threshold: opts.threshold
+        }
+    );
+
+    observer.observe(element);
+
+    return {
+        update(options) {
+            const old = opts;
+            opts = intersectOptions(options);
+            if (
+                old.root !== opts.root ||
+                old.rootMargin !== opts.rootMargin ||
+                old.threshold !== opts.threshold
+            ) {
+                observer.disconnect();
+                observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((e) => opts.callback(e));
+                    },
+                    {
+                        root: opts.root,
+                        rootMargin: opts.rootMargin,
+                        threshold: opts.threshold
+                    }
+                );
+                observer.observe(element);
+            }
+        },
+        destroy() {
+            observer.disconnect();
+        }
+    };
+}
+
+function intersectOptions(options) {
+    if (typeof options === 'function') return { callback: options };
+    return options;
+}
