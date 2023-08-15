@@ -66,7 +66,7 @@
                         </span>
                     </label>
                 {:else}
-                    <label for={undefined} class:in-row={!inline}>
+                    <label for={undefined} class:rs4r-label-in-row={!inline}>
                         <span>
                             {#if icon}
                                 <Icon {icon} />
@@ -106,7 +106,7 @@
                 />
             {/if}
         {:else if label}
-            <label class:in-row={!inline}>
+            <label class:rs4r-label-in-row={!inline}>
                 <span>
                     {#if icon}
                         <Icon {icon} />
@@ -160,12 +160,12 @@
         gap: 5px;
         width: 100%;
     }
-    label.in-row > span {
+    label.rs4r-label-in-row > span {
         width: 100px;
     }
-    label.in-row > :global(input),
-    label.in-row > :global(select),
-    label.in-row > :global(textarea) {
+    label.rs4r-label-in-row > :global(input),
+    label.rs4r-label-in-row > :global(select),
+    label.rs4r-label-in-row > :global(textarea) {
         flex-grow: 1;
         margin: 0;
     }

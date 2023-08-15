@@ -66,7 +66,7 @@
             validateValue(value);
             _cleanup.add(
                 _value.subscribe((val) => {
-                    validateValue(v);
+                    validateValue(val);
                     if (isEqual(value, val)) return;
                     value = val;
                 })

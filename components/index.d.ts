@@ -21,6 +21,12 @@ export interface MenuOptions {
     onselect?: (value: any, target: HTMLElement) => void;
 }
 
+export interface AutoCompleteSuggestion {
+    component: SvelteComponent;
+    props?: Record<string, any>;
+    value: any;
+}
+
 export class Row extends SvelteComponent<{
     class?: string | Record<string, boolean>;
 }> {}
@@ -32,7 +38,7 @@ export class Input extends SvelteComponent<
         label?: string;
         placeholder?: string;
         type?: string;
-        config?: boolean;
+        config?: string;
         value?: string;
         inline?: string;
         disabled?: boolean;
@@ -48,6 +54,43 @@ export class Input extends SvelteComponent<
         blur: FocusEvent;
         focus: FocusEvent;
         input: Event;
+    },
+    {
+        default: {};
+    }
+> {}
+
+export class AutoComplete extends SvelteComponent<
+    {
+        prop?: string;
+        icon?: IconSource;
+        label?: string;
+        placeholder?: string;
+        value?: string;
+        inline?: string;
+        disabled?: boolean;
+        required?: boolean;
+        novalidate?: boolean;
+        class?: string | Record<string, boolean>;
+        suggestions:
+            | (AutoCompleteSuggestion | string)[]
+            | ((
+                  value: string
+              ) =>
+                  | (AutoCompleteSuggestion | string)[]
+                  | Promise<(AutoCompleteSuggestion | string)[]>);
+    },
+    {
+        change: Event;
+        click: MouseEvent;
+        keydown: CustomEvent<KeyboardEvent>;
+        keyup: KeyboardEvent;
+        blur: CustomEvent;
+        focus: CustomEvent;
+        input: Event;
+    },
+    {
+        default: {};
     }
 > {}
 
