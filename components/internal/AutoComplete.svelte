@@ -1,7 +1,9 @@
 <script>
+    import { writable } from 'svelte/store';
     import { mergeClass } from './utils.mjs';
-    import { createEventDispatcher, onMount, tick } from 'svelte';
-    import { onresize } from './actions.mjs';
+    import { createEventDispatcher } from 'svelte';
+    import { selection } from './selection.mjs';
+    import AutoCompleteSuggestion from './AutoCompleteSuggestion.svelte';
 
     const dispatch = createEventDispatcher();
 
@@ -16,9 +18,10 @@
 
     export let className = '';
 
-    let showSuggestions = false;
+    let menuFocus = writable(() => {});
+    let menuShown = writable(false);
 
-    let _suggestions = [];
+    let _suggestions = writable([]);
     let _resolving = false;
     let _needResolve = false;
 
@@ -27,12 +30,9 @@
     /** @type {HTMLInputElement}*/
     let _input;
 
-    /** @type {HTMLDivElement}*/
-    let _div;
-
     async function refreshSuggestions() {
         if (typeof suggestions !== 'function') {
-            _suggestions = suggestions;
+            $_suggestions = suggestions;
             _resolving = false;
             _needResolve = false;
             refreshPosition();
@@ -44,39 +44,16 @@
         }
         _resolving = true;
         _needResolve = false;
-        _suggestions = await suggestions($value);
+        $_suggestions = (await suggestions($value)).map((o) => ({
+            ...(typeof o === 'string' ? { value: o } : o),
+            highlighted: $value,
+            component: AutoCompleteSuggestion
+        }));
+        if ($_suggestions.length == 0) $menuShown = false;
         _resolving = false;
-        refreshPosition();
         if (_needResolve) {
             return refreshSuggestions();
         }
-    }
-
-    async function refreshPosition() {
-        await tick();
-        const inputBounding = _input.getBoundingClientRect();
-        const divBounding = _div.getBoundingClientRect();
-        const inputBottom = inputBounding.top + inputBounding.height;
-        if (inputBottom + divBounding.height > window.innerHeight) {
-            _div.style.top = `${inputBounding.top - divBounding.height}px`;
-        } else {
-            _div.style.top = `${inputBottom}px`;
-        }
-        if (inputBounding.right + divBounding.width > window.innerWidth) {
-            _div.style.left = `${inputBounding.left + inputBounding.width - divBounding.width}px`;
-        } else {
-            _div.style.left = `${inputBounding.left}px`;
-        }
-    }
-
-    function focusIn() {
-        dispatch('focus');
-    }
-
-    function focusOut() {
-        if (this.matches(':focus-within')) return;
-        dispatch('blur');
-        showSuggestions = false;
     }
 
     function inputKeydown(event) {
@@ -88,8 +65,8 @@
             _input.selectionStart === _input.selectionEnd && _input.selectionEnd === value.length;
         const toSuggestion =
             event.key === 'ArrowDown' || (cursorLast && event.key === 'ArrowRight');
-        if (toSuggestion && showSuggestions && suggestions.length) {
-            _div.firstChild?.focus?.();
+        if (toSuggestion && $menuShown) {
+            $menuFocus();
             event.preventDefault();
             return;
         }
@@ -99,158 +76,45 @@
             event.key === 'Delete' ||
             event.key === 'ArrowDown'
         ) {
-            showSuggestions = true;
-            refreshPosition();
-        } else if (event.key === 'Escape') showSuggestions = false;
-    }
-
-    function selectionKeydown(ev) {
-        if (ev.key === 'ArrowDown' || ev.key === 'ArrowRight') {
-            this.nextElementSibling?.focus?.();
-            ev.preventDefault();
-            return;
-        }
-        if (ev.key === 'ArrowUp' || ev.key === 'ArrowLeft') {
-            if (this.previousElementSibling) this.previousElementSibling.focus();
-            else _input.focus();
-            ev.preventDefault();
-            return;
-        }
-        if (ev.key === 'Home') {
-            _div.firstChild.focus();
-            ev.preventDefault();
-            return;
-        }
-        if (ev.key === 'End') {
-            _div.lastChild.focus();
-            ev.preventDefault();
-            return;
-        }
-        if (ev.key === 'Escape') {
-            _input.focus();
-            showSuggestions = false;
-            return;
-        }
-        if (
-            ev.key.length === 1 ||
-            ev.key === 'Tab' ||
-            ev.key === 'Backspace' ||
-            ev.key === 'Delete'
-        ) {
-            _input.focus();
-            const newKeydown = new KeyboardEvent('keydown', ev);
-            _input.dispatchEvent(newKeydown);
-            return;
-        }
+            $menuShown = true;
+        } else if (event.key === 'Escape') $menuShown = false;
     }
 
     function applySuggestion(v) {
-        $value = v;
+        $value = typeof v === 'string' ? v : v.value;
         _input.focus();
-        showSuggestions = false;
+        $menuShown = false;
     }
-
-    $: suggestionShown = showSuggestions && !_resolving && _suggestions.length > 0;
 
     $: if (_value != $value) {
         _value = $value;
         refreshSuggestions();
     }
 
-    onMount(() => {
-        _div.style.width = `${_input.offsetWidth}px`;
-    });
+    refreshSuggestions();
 </script>
 
-<div class="rs4r-input rs4r-autocomplete" on:focusin={focusIn} on:focusout={focusOut}>
-    <input
-        bind:this={_input}
-        bind:value={$value}
-        class={mergeClass(className)}
-        type="text"
-        {placeholder}
-        {required}
-        {disabled}
-        {readonly}
-        autocomplete="off"
-        on:change
-        on:click
-        on:keydown={inputKeydown}
-        on:keyup
-        on:input
-        use:onresize={() => (_div.style.minWidth = `${_input.offsetWidth}px`)}
-    />
-    <div bind:this={_div} class="rs4r-suggestions red-ui-panel" class:rs4r-shown={suggestionShown}>
-        {#each _suggestions as suggestion}
-            <button
-                type="button"
-                tabindex="-1"
-                on:click={applySuggestion(
-                    typeof suggestion === 'string' ? suggestion : suggestion.value
-                )}
-                on:keydown={selectionKeydown}
-            >
-                {#if typeof suggestion === 'string'}
-                    {suggestion}
-                {:else if typeof suggestion === 'object'}
-                    <svelte:component
-                        this={suggestion.component}
-                        input={value}
-                        {...suggestion.props ?? {}}
-                    />
-                {/if}
-            </button>
-        {/each}
-    </div>
-</div>
-
-<style>
-    .rs4r-autocomplete {
-        display: inline-block;
-        position: relative;
-        box-sizing: border-box;
-    }
-    .rs4r-suggestions {
-        display: none;
-        position: fixed;
-        box-sizing: border-box;
-        max-height: 200px;
-        overflow: auto;
-        box-shadow: 1px 1px 4px var(--red-ui-shadow);
-        font-family: var(--red-ui-primary-font);
-        font-size: var(--red-ui-primary-font-size);
-        border: 1px solid var(--red-ui-primary-border-color);
-        background: var(--red-ui-secondary-background);
-        z-index: 2000;
-    }
-    .rs4r-suggestions.rs4r-shown {
-        display: block;
-    }
-    .rs4r-suggestions > button {
-        all: unset;
-        box-sizing: border-box;
-        width: 100%;
-        display: block;
-        padding: 4px 8px 4px 16px;
-        clear: both;
-        font-weight: normal;
-        line-height: 20px;
-        color: var(--red-ui-menuColor);
-        white-space: nowrap;
-        text-decoration: none;
-    }
-    .rs4r-suggestions > button:focus,
-    .rs4r-suggestions > button:hover {
-        color: var(--red-ui-menuHoverColor);
-        text-decoration: none;
-        background-color: var(--red-ui-menuHoverBackground);
-        border: none;
-        outline: none;
-    }
-    input {
-        margin: 0;
-        display: block;
-        width: 100%;
-        box-sizing: border-box;
-    }
-</style>
+<input
+    bind:this={_input}
+    bind:value={$value}
+    class={mergeClass('rs4r-input rs4r-autocomplete', className)}
+    type="text"
+    {placeholder}
+    {required}
+    {disabled}
+    {readonly}
+    autocomplete="off"
+    on:change
+    on:click
+    on:keydown={inputKeydown}
+    on:focus
+    on:blur
+    on:keyup
+    on:input
+    use:selection={{
+        options: _suggestions,
+        shown: menuShown,
+        focus: menuFocus,
+        onSelect: applySuggestion
+    }}
+/>

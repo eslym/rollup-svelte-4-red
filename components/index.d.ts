@@ -22,18 +22,23 @@ export interface MenuOptions {
     onselect?: (value: any, target: HTMLElement) => void;
 }
 
+export interface Selection {
+    component: SvelteComponent;
+    value: any;
+}
+
 export interface SelectionOption {
     shown: Writable<boolean>;
     focus: Writable<() => void>;
     component?: SvelteComponent;
     onSelect: (value: any) => void;
-    options: any[];
+    options: Writable<(Selection | string)[]>;
 }
 
 export interface AutoCompleteSuggestion {
     component: SvelteComponent;
-    props?: Record<string, any>;
-    value: any;
+    value: string;
+    source?: string[];
 }
 
 export class Row extends SvelteComponent<{
@@ -82,12 +87,8 @@ export class AutoComplete extends SvelteComponent<
         novalidate?: boolean;
         class?: string | Record<string, boolean>;
         suggestions:
-            | (AutoCompleteSuggestion | string)[]
-            | ((
-                  value: string
-              ) =>
-                  | (AutoCompleteSuggestion | string)[]
-                  | Promise<(AutoCompleteSuggestion | string)[]>);
+            | (Selection | string)[]
+            | ((value: string) => (Selection | string)[] | Promise<(Selection | string)[]>);
     },
     {
         change: Event;

@@ -19,7 +19,9 @@
 
     let container;
 
-    focus = () => container?.firstChild?.focus?.();
+    $focus = () => {
+        if ($shown) container?.firstChild?.focus?.();
+    };
 
     function selectionKeydown(ev) {
         if (ev.key === 'ArrowDown' || ev.key === 'ArrowRight') {
@@ -82,20 +84,28 @@
         }
     }
 
+    function focusOut() {
+        requestAnimationFrame(() => {
+            if (isFocus() || target.matches(':focus-within') || target.matches(':focus')) return;
+            $shown = false;
+        });
+    }
+
     onMount(refreshPosition);
 
-    $: container.style.minWidth = `${minWidth}px`;
+    $: if (container) container.style.minWidth = `${minWidth}px`;
 
     $: if ($shown) refreshPosition();
 </script>
 
 <div
-    class=" rs4r-panel red-ui-panel"
-    class:shown={$shown}
+    class="rs4r-panel red-ui-popover-panel"
+    class:rs4r-shown={$shown}
+    on:focusout={focusOut}
     bind:this={container}
     use:onresize={refreshPosition}
 >
-    {#each options as option}
+    {#each $options as option}
         <button
             type="button"
             tabindex="-1"
@@ -103,9 +113,11 @@
             on:keydown={selectionKeydown}
         >
             {#if typeof option === 'string'}
-                <svelte:component this={component} value={option} />
-            {:else if typeof option === 'object'}
+                <svelte:component this={component} {option} />
+            {:else if typeof option === 'object' && option.component}
                 <svelte:component this={option.component} {option} />
+            {:else}
+                <span style="color:red;"><code>option.component</code> is not set!!</span>
             {/if}
         </button>
     {/each}
@@ -125,8 +137,8 @@
         background: var(--red-ui-secondary-background);
         z-index: -2000;
     }
-    .rs4r-panel.shown {
-        display: 2000;
+    .rs4r-panel.rs4r-shown {
+        z-index: 2000;
     }
     .rs4r-panel > button {
         all: unset;

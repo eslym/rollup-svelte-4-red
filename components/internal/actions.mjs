@@ -1,7 +1,3 @@
-import Text from './Text.svelte';
-import SelectionMenu from './SelectionMenu.svelte';
-import { writable } from 'svelte/store';
-
 export function tooltip(element, tooltip = '') {
     const popover = RED.popover.tooltip(window.$(element), tooltip);
 
@@ -73,53 +69,6 @@ export function menu(element, options) {
         destroy() {
             menu?.hide();
             menu = undefined;
-        }
-    };
-}
-
-/**
- * @param {HTMLElement} element
- * @param {any} options
- */
-export function selection(element, options) {
-    const focus = options.focus ?? writable();
-    const shown = options.shown ?? writable();
-    const menu = new SelectionMenu({
-        target: document.body,
-        props: {
-            shown,
-            focus,
-            options: options.options,
-            onSelect: options.onSelect ? options.onSelect : () => {},
-            component: options.component ? options.component : Text,
-            minWidth: element.offsetWidth,
-            target: element
-        }
-    });
-    const observer = new ResizeObserver(() => {
-        menu.$set({ minWidth: element.offsetWidth });
-    });
-    observer.observe(element);
-
-    const focusOut = () => {
-        if (!menu.isFocus()) shown.set(false);
-    };
-
-    element.addEventListener('focusout', focusOut);
-
-    return {
-        update(options) {
-            menu.$set({
-                options: options.options,
-                onSelect: options.onSelect ? options.onSelect : () => {},
-                component: options.component ? options.component : Text
-            });
-            menu.refreshPosition();
-        },
-        destroy() {
-            element.removeEventListener('focusout', focusOut);
-            observer.disconnect();
-            menu.$destroy();
         }
     };
 }

@@ -1,5 +1,5 @@
 <script>
-    export let value;
+    export let option;
 </script>
 
-{value}
+{typeof option === 'string' ? option : option.value}
