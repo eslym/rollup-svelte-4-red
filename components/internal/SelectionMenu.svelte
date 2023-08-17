@@ -1,32 +1,25 @@
 <svelte:options accessors={true} />
 
 <script>
-    import { onMount } from 'svelte';
+    import { onMount, tick } from 'svelte';
     import Text from './Text.svelte';
     import { onresize } from './actions.mjs';
 
-    export let shown = false;
+    export let shown;
+    export let focus;
     export let component = Text;
-    export let x = 0;
-    export let y = 0;
     export let minWidth = 0;
 
     export let onSelect = undefined;
 
+    /** @type {HTMLElement}*/
     export let target;
-
-    export let width = 0;
-    export let height = 0;
-
-    export let container;
 
     export let options;
 
-    function updateSize() {
-        const bounding = container.getBoundingClientRect();
-        width = bounding.width;
-        height = bounding.height;
-    }
+    let container;
+
+    focus = () => container?.firstChild?.focus?.();
 
     function selectionKeydown(ev) {
         if (ev.key === 'ArrowDown' || ev.key === 'ArrowRight') {
@@ -52,7 +45,7 @@
         }
         if (ev.key === 'Escape') {
             target.focus();
-            shown = false;
+            $shown = false;
             return;
         }
         if (
@@ -73,17 +66,34 @@
         return container && container.matches(':focus-within');
     }
 
-    onMount(updateSize);
+    export async function refreshPosition() {
+        await tick();
+        const targetBounding = target.getBoundingClientRect();
+        const divBounding = container.getBoundingClientRect();
+        if (divBounding.bottom > window.innerHeight) {
+            container.style.top = `${targetBounding.top - divBounding.height}px`;
+        } else {
+            container.style.top = `${targetBounding.bottom}px`;
+        }
+        if (divBounding.right > window.innerWidth) {
+            container.style.left = `${targetBounding.right - divBounding.width}px`;
+        } else {
+            container.style.left = `${targetBounding.left}px`;
+        }
+    }
 
-    $: panelStyle = `left:${x}px;top:${y}px;min-width:${minWidth}px;`;
+    onMount(refreshPosition);
+
+    $: container.style.minWidth = `${minWidth}px`;
+
+    $: if ($shown) refreshPosition();
 </script>
 
 <div
     class=" rs4r-panel red-ui-panel"
-    class:shown
+    class:shown={$shown}
     bind:this={container}
-    use:onresize={updateSize}
-    style={panelStyle}
+    use:onresize={refreshPosition}
 >
     {#each options as option}
         <button
@@ -103,7 +113,7 @@
 
 <style>
     .rs4r-panel {
-        display: none;
+        display: block;
         position: fixed;
         box-sizing: border-box;
         max-height: 200px;
@@ -113,10 +123,10 @@
         font-size: var(--red-ui-primary-font-size);
         border: 1px solid var(--red-ui-primary-border-color);
         background: var(--red-ui-secondary-background);
-        z-index: 2000;
+        z-index: -2000;
     }
     .rs4r-panel.shown {
-        display: block;
+        display: 2000;
     }
     .rs4r-panel > button {
         all: unset;

@@ -1,4 +1,5 @@
 import { SvelteComponent } from 'svelte';
+import { Writable } from 'svelte/store';
 
 export type IconSource = { fa4: FronAwesome4Icons };
 
@@ -19,6 +20,14 @@ export interface MenuOptions {
     offset?: [number, number];
     onclose?: (cancelled: boolean, target: HTMLElement) => void;
     onselect?: (value: any, target: HTMLElement) => void;
+}
+
+export interface SelectionOption {
+    shown: Writable<boolean>;
+    focus: Writable<() => void>;
+    component?: SvelteComponent;
+    onSelect: (value: any) => void;
+    options: any[];
 }
 
 export interface AutoCompleteSuggestion {
