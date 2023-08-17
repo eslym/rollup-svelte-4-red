@@ -1,3 +1,6 @@
+import Text from './Text.svelte';
+import Menu from './Menu.svelte';
+
 export function tooltip(element, tooltip = '') {
     const popover = RED.popover.tooltip(window.$(element), tooltip);
 
@@ -71,6 +74,28 @@ export function menu(element, options) {
             menu = undefined;
         }
     };
+}
+
+/**
+ * @param {HTMLElement} element
+ * @param {any} options
+ */
+export function selection(element, options) {
+    const observer = new ResizeObserver(() => {});
+    let rect = element.getBoundingClientRect();
+    let shown = false;
+    const menu = new Menu({
+        target: document.body,
+        props: {
+            options: options,
+            onSelect: options.onSelect ? options.onSelect : () => {},
+            component: options.component ? options.component : Text,
+            minWidth: element.offsetWidth,
+            target: element,
+            x: rect.left,
+            y: rect.bottom
+        }
+    });
 }
 
 /**

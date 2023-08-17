@@ -1,4 +1,6 @@
 <script>
+    import { mergeClass } from './utils.mjs';
+
     export let type;
     export let value;
     export let placeholder;
@@ -14,7 +16,7 @@
             bind:checked={$value}
             {disabled}
             {required}
-            class={className}
+            class={mergeClass('rs4r-input rs4r-checkbox', className)}
             on:change
             on:click
             on:focus
@@ -32,7 +34,7 @@
         {placeholder}
         {disabled}
         {required}
-        class={className}
+        class={mergeClass('rs4r-input', className)}
         on:change
         on:click
         on:focus
@@ -48,7 +50,7 @@
         {placeholder}
         {disabled}
         {required}
-        class={className}
+        class={mergeClass('rs4r-input', className)}
         on:change
         on:click
         on:focus
@@ -63,7 +65,7 @@
         {placeholder}
         {disabled}
         {required}
-        class={className}
+        class={mergeClass('rs4r-input rs4r-textarea', className)}
         on:change
         on:click
         on:focus
@@ -78,7 +80,7 @@
         {placeholder}
         {disabled}
         {required}
-        class={className}
+        class={mergeClass('rs4r-input rs4r-select', className)}
         on:change
         on:click
         on:focus
@@ -96,7 +98,7 @@
         {placeholder}
         {disabled}
         {required}
-        class={className}
+        class={mergeClass('rs4r-input', className)}
         autocomplete="off"
         on:change
         on:click
