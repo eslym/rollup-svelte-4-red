@@ -1,4 +1,4 @@
-const msgCompletions = (msgCompletions = [
+const msgCompletions = [
     { value: 'payload' },
     { value: 'topic', source: ['mqtt', 'inject', 'rbe'] },
     { value: 'action', source: ['mqtt'] },
@@ -59,7 +59,27 @@ const msgCompletions = (msgCompletions = [
     { value: 'url', source: ['http request'] },
     { value: 'userProperties', source: ['mqtt'] },
     { value: '_session', source: ['websocket out', 'tcp out'] }
-]);
+];
+
+const contextParse = function (v, defaultStore) {
+    var parts = RED.utils.parseContextKey(v, defaultStore && defaultStore.value);
+    return {
+        option: parts.store,
+        value: parts.key
+    };
+};
+
+const contextExport = function (v, opt) {
+    if (!opt) {
+        return v;
+    }
+    var store = typeof opt === 'string' ? opt : opt.value;
+    if (store !== RED.settings.context.default) {
+        return '#:(' + store + ')::' + v;
+    } else {
+        return v;
+    }
+};
 
 export const msg = {
     label: 'msg.',
@@ -74,7 +94,7 @@ export const flow = {
     validate: RED.utils.validatePropertyExpression,
     parse: contextParse,
     export: contextExport,
-    valueLabel: contextLabel
+    valueLabel: Symbol('placeholder') /* TODO: make component */
 };
 
 export const global = {
@@ -84,7 +104,7 @@ export const global = {
     validate: RED.utils.validatePropertyExpression,
     parse: contextParse,
     export: contextExport,
-    valueLabel: contextLabel
+    valueLabel: Symbol('placeholder') /* TODO: make component */
 };
 
 export const string = {
@@ -94,13 +114,13 @@ export const string = {
 
 export const number = {
     label: 'number',
-    icon: 'red/images/typedInput/09.svg',
+    icon: { maskSvg: 'red/images/typedInput/09.svg' },
     validate: (v) => /^[+-]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(v)
 };
 
 export const bool = {
     label: 'boolean',
-    icon: 'red/images/typedInput/bool.svg',
+    icon: { maskSvg: 'red/images/typedInput/bool.svg' },
     options: [
         {
             label: 'true',
@@ -125,7 +145,6 @@ export const json = {
         }
     },
     expand: function (value, update) {
-        let value = value;
         try {
             value = JSON.stringify(JSON.parse(value), null, 4);
         } catch (err) {}

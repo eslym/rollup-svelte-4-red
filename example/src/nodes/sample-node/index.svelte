@@ -26,6 +26,12 @@
                 animal: {
                     value: ''
                 },
+                typed: {
+                    value: {
+                        type: 'msg',
+                        value: 'payload'
+                    }
+                },
                 _version: {
                     value: version
                 }
@@ -142,7 +148,15 @@
 </script>
 
 <script>
-    import { Input, Icon, Row, AutoComplete, tooltip } from '@eslym/rs4r/components';
+    import {
+        Input,
+        Icon,
+        Row,
+        AutoComplete,
+        tooltip,
+        TypedInput,
+        builtinTypes
+    } from '@eslym/rs4r/components';
     import { JSONEditor } from 'svelte-jsoneditor';
     import { openTypeEditor } from '@eslym/rs4r/tray';
 
@@ -161,7 +175,6 @@
                             updatedContent.text !== undefined
                                 ? updatedContent.text
                                 : JSON.stringify(updatedContent.json);
-                        console.log(node.json);
                     }
                 }
             },
@@ -184,6 +197,15 @@
 <Input icon={{ fa4: 'tag' }} prop="name" label="Name" />
 <Input icon={{ fa4: 'gear' }} prop="config" label="Config" />
 <AutoComplete label="Animal" prop="animal" suggestions={filterAnimals} />
+<TypedInput
+    label="Typed Input"
+    prop="typed"
+    types={{
+        msg: builtinTypes.msg,
+        str: builtinTypes.string,
+        num: builtinTypes.number
+    }}
+/>
 
 <Row>
     <label class="textarea">

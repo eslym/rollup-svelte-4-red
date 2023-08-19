@@ -18,6 +18,7 @@ export function selection(element, options) {
             onSelect: options.onSelect ? options.onSelect : () => {},
             component: options.component ? options.component : Text,
             minWidth: element.offsetWidth,
+            class: options.class,
             target: element
         }
     });
@@ -37,9 +38,9 @@ export function selection(element, options) {
     return {
         update(options) {
             menu.$set({
-                options: options.options,
                 onSelect: options.onSelect ? options.onSelect : () => {},
-                component: options.component ? options.component : Text
+                component: options.component ? options.component : Text,
+                class: options.class
             });
             menu.refreshPosition();
         },

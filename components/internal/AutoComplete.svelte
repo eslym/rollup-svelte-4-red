@@ -1,3 +1,9 @@
+<script context="module">
+    function matchedSource(source, value) {
+        return source.filter((s) => s.toLowerCase().includes(value.toLowerCase()));
+    }
+</script>
+
 <script>
     import { writable } from 'svelte/store';
     import { mergeClass } from './utils.mjs';
@@ -32,10 +38,37 @@
 
     async function refreshSuggestions() {
         if (typeof suggestions !== 'function') {
-            $_suggestions = suggestions;
+            $_suggestions = (suggestions ?? []).map((o) => ({
+                ...(typeof o === 'string' ? { value: o } : o),
+                highlighted: '',
+                component: AutoCompleteSuggestion
+            }));
+            if ($value) {
+                $_suggestions = $_suggestions
+                    .filter((o) => {
+                        o.matchedSource = matchedSource(o.source ?? [], $value);
+                        if (o.value.toLowerCase().startsWith($value.toLowerCase())) {
+                            o.highlighted = o.value.slice(0, $value.length);
+                            if (o.matchedSource.length > 0) {
+                                o.p = -1;
+                            } else {
+                                o.p = 0;
+                            }
+                            return true;
+                        }
+                        if (o.matchedSource.length > 0) {
+                            o.p = 1;
+                            return true;
+                        }
+                        return false;
+                    })
+                    .sort((a, b) => {
+                        return a.p - b.p;
+                    });
+            }
+            if ($_suggestions.length == 0) $menuShown = false;
             _resolving = false;
             _needResolve = false;
-            refreshPosition();
             return;
         }
         if (_resolving) {
@@ -76,7 +109,7 @@
             event.key === 'Delete' ||
             event.key === 'ArrowDown'
         ) {
-            $menuShown = true;
+            $menuShown = $_suggestions.length > 0;
         } else if (event.key === 'Escape') $menuShown = false;
     }
 

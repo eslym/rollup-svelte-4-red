@@ -4,6 +4,7 @@
     import { onMount, tick } from 'svelte';
     import Text from './Text.svelte';
     import { onresize } from './actions.mjs';
+    import { mergeClass } from './utils.mjs';
 
     export let shown;
     export let focus;
@@ -16,6 +17,10 @@
     export let target;
 
     export let options;
+
+    let className = '';
+
+    export { className as class };
 
     let container;
 
@@ -99,7 +104,7 @@
 </script>
 
 <div
-    class="rs4r-panel red-ui-popover-panel"
+    class={mergeClass('rs4r-panel red-ui-popover-panel', className)}
     class:rs4r-shown={$shown}
     on:focusout={focusOut}
     bind:this={container}

@@ -3,6 +3,8 @@
 
     $: highlighted = option.value.slice(0, option.highlighted.length);
     $: rest = option.value.slice(option.highlighted.length);
+
+    $: matchedSource = option.matchedSource ?? [];
 </script>
 
 <div>
@@ -10,7 +12,11 @@
         <span class="rs4r-highlighted">{highlighted}</span><span>{rest}</span>
     </div>
     {#if option.source && option.source.length > 0}
-        <div class="rs4r-autocomplete-suggestion-source">{option.source.join(',')}</div>
+        <div class="rs4r-autocomplete-suggestion-source">
+            {#each option.source ?? [] as source}
+                <span class:rs4r-highlighted={matchedSource.includes(source)}>{source}</span>
+            {/each}
+        </div>
     {/if}
 </div>
 
@@ -34,5 +40,12 @@
     }
     .rs4r-autocomplete-suggestion-source {
         font-size: 0.8em;
+        display: flex;
+        gap: 0;
+    }
+    .rs4r-autocomplete-suggestion-source span:not(:last-child)::after {
+        content: ',';
+        color: var(--red-ui-menuColor);
+        font-weight: normal;
     }
 </style>

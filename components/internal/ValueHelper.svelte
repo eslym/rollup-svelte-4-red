@@ -20,7 +20,7 @@
     let _invalid = false;
 
     let _cleanup = new Set();
-    let state = {};
+    let state = undefined;
 
     const editingNode = getContext(editingNodeContextKey) ?? writable(undefined);
 
@@ -39,7 +39,13 @@
     }
 
     function sync(p, t, c, r) {
-        if (state.prop === p && state.type === t && state.config === c && state.required === r) {
+        if (
+            state !== undefined &&
+            state.prop === p &&
+            state.type === t &&
+            state.config === c &&
+            state.required === r
+        ) {
             return;
         }
         state = {

@@ -104,6 +104,24 @@ export class AutoComplete extends SvelteComponent<
     }
 > {}
 
+export class TypedInput extends SvelteComponent<
+    {
+        prop?: string;
+        icon?: IconSource;
+        label?: string;
+        placeholder?: string;
+        value?: string;
+        inline?: string;
+        disabled?: boolean;
+        required?: boolean;
+        novalidate?: boolean;
+        types: Record<string, any>;
+    },
+    {
+        default: {};
+    }
+> {}
+
 export class Icon extends SvelteComponent<
     {
         icon: IconSource;
@@ -149,6 +167,8 @@ export function onintersect(
               callback: (entry: IntersectionObserverEntry) => void;
           })
 ): { destroy(): void };
+
+export const builtinTypes: Record<string, any>;
 
 type FronAwesome4Icons = [
     'address-book',
