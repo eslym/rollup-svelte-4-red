@@ -35,7 +35,7 @@
         ) {
             req = true;
         }
-        return req || (validator ? !validator(v) : false);
+        _invalid = req || (validator ? !validator(v) : false);
     }
 
     function sync(p, t, c, r) {

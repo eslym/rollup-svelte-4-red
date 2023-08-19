@@ -124,7 +124,7 @@
         refreshSuggestions();
     }
 
-    refreshSuggestions();
+    $: refreshSuggestions(suggestions);
 </script>
 
 <input
