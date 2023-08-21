@@ -36,6 +36,7 @@
         display: block;
         height: 18px;
         width: 13px;
+        margin-right: 4px !important;
     }
     .rs4r-typedinput-padding {
         padding-left: 18px;

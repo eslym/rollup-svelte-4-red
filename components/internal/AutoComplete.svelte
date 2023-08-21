@@ -24,6 +24,11 @@
 
     export let className = '';
 
+    export let focusState = false;
+    export let highlightFocus = true;
+
+    let isFocused;
+
     let menuFocus = writable(() => {});
     let menuShown = writable(false);
 
@@ -36,6 +41,10 @@
     /** @type {HTMLInputElement}*/
     let _input;
 
+    let _focus = undefined;
+
+    export { _input as inputElement };
+
     async function refreshSuggestions() {
         if (typeof suggestions !== 'function') {
             $_suggestions = (suggestions ?? []).map((o) => ({
@@ -43,12 +52,12 @@
                 highlighted: '',
                 component: AutoCompleteSuggestion
             }));
-            if ($value) {
+            if (value) {
                 $_suggestions = $_suggestions
                     .filter((o) => {
-                        o.matchedSource = matchedSource(o.source ?? [], $value);
-                        if (o.value.toLowerCase().startsWith($value.toLowerCase())) {
-                            o.highlighted = o.value.slice(0, $value.length);
+                        o.matchedSource = matchedSource(o.source ?? [], value);
+                        if (o.value.toLowerCase().startsWith(value.toLowerCase())) {
+                            o.highlighted = o.value.slice(0, value.length);
                             if (o.matchedSource.length > 0) {
                                 o.p = -1;
                             } else {
@@ -77,9 +86,9 @@
         }
         _resolving = true;
         _needResolve = false;
-        $_suggestions = (await suggestions($value)).map((o) => ({
+        $_suggestions = (await suggestions(value)).map((o) => ({
             ...(typeof o === 'string' ? { value: o } : o),
-            highlighted: $value,
+            highlighted: value,
             component: AutoCompleteSuggestion
         }));
         if ($_suggestions.length == 0) $menuShown = false;
@@ -114,23 +123,33 @@
     }
 
     function applySuggestion(v) {
-        $value = typeof v === 'string' ? v : v.value;
+        value = typeof v === 'string' ? v : v.value;
         _input.focus();
         $menuShown = false;
     }
 
-    $: if (_value != $value) {
-        _value = $value;
+    $: if (_value != value) {
+        _value = value;
         refreshSuggestions();
     }
 
     $: refreshSuggestions(suggestions);
+
+    $: focusState = isFocused || $menuShown;
+
+    $: if (focusState !== _focus) {
+        if (_focus !== undefined) {
+            dispatch(focusState ? 'focus' : 'blur');
+        }
+        _focus = focusState;
+    }
 </script>
 
 <input
     bind:this={_input}
-    bind:value={$value}
+    bind:value
     class={mergeClass('rs4r-input rs4r-autocomplete', className)}
+    class:rs4r-focused={highlightFocus && focusState}
     type="text"
     {placeholder}
     {required}
@@ -140,8 +159,8 @@
     on:change
     on:click
     on:keydown={inputKeydown}
-    on:focus
-    on:blur
+    on:focus={() => (isFocused = true)}
+    on:blur={() => (isFocused = false)}
     on:keyup
     on:input
     use:selection={{
@@ -151,3 +170,9 @@
         onSelect: applySuggestion
     }}
 />
+
+<style>
+    .rs4r-focused {
+        border-color: var(--red-ui-form-input-focus-color) !important;
+    }
+</style>

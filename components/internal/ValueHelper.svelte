@@ -18,6 +18,7 @@
     let _type = type;
     let _required = required;
     let _invalid = false;
+    let _propDef = undefined;
 
     let _cleanup = new Set();
     let state = undefined;
@@ -82,22 +83,22 @@
         }
         _bindVal = false;
         const defs = $editingNode._def;
-        const propDef = defs.defaults[prop] ?? defs.credentials[prop];
-        if (!propDef) {
+        _propDef = defs.defaults[prop] ?? defs.credentials[prop];
+        if (!_propDef) {
             throw new Error(`Property ${prop} not found in node ${node.type}`);
         }
         _credential = !!defs.credentials?.[prop];
-        _required = propDef.required ?? required;
+        _required = _propDef.required ?? required;
         _type = type;
         if (_credential) {
-            if (propDef.type !== 'password') {
+            if (_propDef.type !== 'password') {
                 if (!['password', 'text', 'textarea'].includes(type)) {
                     _type = 'text';
                 }
                 _value = writable($editingNode.credentials[prop]);
                 _cleanup.add(
                     _value.subscribe((v) => {
-                        validateValue(v, propDef.validate);
+                        validateValue(v, _propDef.validate);
                         if (isEqual($editingNode.credentials[prop], v)) return;
                         $editingNode.credentials[prop] = v;
                     })
@@ -126,13 +127,13 @@
             _type = 'password';
             _cleanup.add(
                 _val.subscribe((v) => {
-                    validateValue(v, propDef.validate);
+                    validateValue(v, _propDef.validate);
                     if (isEqual($editingNode.credentials[prop], v)) return;
                     $editingNode.credentials[prop] = v;
                     $editingNode.credentials[`has_${prop}`] = !!v;
                 })
             );
-            _cleanup.add(_display.subscribe((v) => validateValue(v, propDef.validate)));
+            _cleanup.add(_display.subscribe((v) => validateValue(v, _propDef.validate)));
             _cleanup.add(
                 editingNode.subscribe((node) => {
                     if (isEqual($editingNode.credentials[prop], get(_val))) return;
@@ -144,7 +145,7 @@
         _value = writable($editingNode[prop]);
         _cleanup.add(
             _value.subscribe((v) => {
-                validateValue(v, propDef.validate);
+                validateValue(v, _propDef.validate);
                 if (isEqual($editingNode[prop], v)) return;
                 $editingNode[prop] = v;
             })
@@ -155,7 +156,7 @@
                 _value.set(node[prop]);
             })
         );
-        _config = 'type' in propDef ? propDef.type : false;
+        _config = 'type' in _propDef ? _propDef.type : false;
     }
 
     $: sync(prop, type, config, required);
@@ -174,4 +175,4 @@
     onDestroy(cleanup);
 </script>
 
-<slot {_config} {_type} {_value} {_required} {_invalid} />
+<slot {_config} {_type} {_value} {_required} {_invalid} {_credential} {_propDef} />

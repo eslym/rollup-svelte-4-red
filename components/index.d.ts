@@ -95,8 +95,8 @@ export class AutoComplete extends SvelteComponent<
         click: MouseEvent;
         keydown: CustomEvent<KeyboardEvent>;
         keyup: KeyboardEvent;
-        blur: CustomEvent;
         focus: CustomEvent;
+        blur: CustomEvent;
         input: Event;
     },
     {

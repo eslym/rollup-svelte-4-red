@@ -107,12 +107,12 @@ export const global = {
     valueLabel: Symbol('placeholder') /* TODO: make component */
 };
 
-export const string = {
+export const str = {
     label: 'string',
     icon: { maskSvg: 'red/images/typedInput/az.svg' }
 };
 
-export const number = {
+export const num = {
     label: 'number',
     icon: { maskSvg: 'red/images/typedInput/09.svg' },
     validate: (v) => /^[+-]?[0-9]*\.?[0-9]*([eE][-+]?[0-9]+)?$/.test(v)
@@ -163,7 +163,7 @@ export const json = {
     }
 };
 
-export const regex = {
+export const re = {
     label: 'regular expression',
     icon: { svgMask: 'red/images/typedInput/re.svg' }
 };

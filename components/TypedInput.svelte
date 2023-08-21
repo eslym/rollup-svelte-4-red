@@ -34,6 +34,7 @@
     let:_value
     let:_required
     let:_invalid
+    let:_propDef
 >
     <svelte:component this={wrapper}>
         {#if label}
@@ -48,7 +49,7 @@
                     value={_value}
                     error={_invalid}
                     required={_required}
-                    {types}
+                    types={_propDef?.types ?? types}
                     {placeholder}
                     {disabled}
                     on:change
@@ -65,7 +66,7 @@
                 value={_value}
                 error={_invalid}
                 required={_required}
-                {types}
+                types={_propDef?.types ?? types}
                 {placeholder}
                 {disabled}
                 on:change

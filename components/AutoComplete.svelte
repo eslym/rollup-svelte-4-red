@@ -4,6 +4,7 @@
     import InternalAutoComplete from './internal/AutoComplete.svelte';
     import { mergeClass } from './internal/utils.mjs';
     import ValueHelper from './internal/ValueHelper.svelte';
+    import Unwrap from './internal/Unwrap.svelte';
     import Icon from './Icon.svelte';
 
     export let prop = undefined;
@@ -44,7 +45,8 @@
                     {/if}
                     {label}
                 </span>
-                <InternalAutoComplete
+                <Unwrap
+                    component={InternalAutoComplete}
                     value={_value}
                     className={mergeClass({ 'input-error': _invalid }, className)}
                     required={_required}
@@ -53,15 +55,16 @@
                     {disabled}
                     on:change
                     on:click
-                    on:focus
-                    on:blur
                     on:keydown
                     on:keyup
+                    on:focus
+                    on:blur
                     on:input
                 />
             </label>
         {:else}
-            <InternalAutoComplete
+            <Unwrap
+                component={InternalAutoComplete}
                 value={_value}
                 className={mergeClass({ 'input-error': _invalid }, className)}
                 required={_required}
@@ -70,10 +73,10 @@
                 {disabled}
                 on:change
                 on:click
-                on:focus
-                on:blur
                 on:keydown
                 on:keyup
+                on:focus
+                on:blur
                 on:input
             />
         {/if}
