@@ -9,6 +9,7 @@ import { writable } from 'svelte/store';
 export function selection(element, options) {
     const focus = options.focus ?? writable();
     const shown = options.shown ?? writable();
+    const context = new Map(options.context ?? []);
     const menu = new SelectionMenu({
         target: document.body,
         props: {
@@ -20,10 +21,12 @@ export function selection(element, options) {
             minWidth: element.offsetWidth,
             class: options.class,
             target: element
-        }
+        },
+        context
     });
     const observer = new ResizeObserver(() => {
         menu.$set({ minWidth: element.offsetWidth });
+        menu.refreshPosition();
     });
     observer.observe(element);
 

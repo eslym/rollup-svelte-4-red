@@ -3,14 +3,18 @@
 
     import AutoComplete from './AutoComplete.svelte';
     import SelectType from './typed-input/SelectType.svelte';
-    import ValueHelper from './ValueHelper.svelte';
     import { createEventDispatcher, tick } from 'svelte';
+    import Icon from '../Icon.svelte';
+    import { mergeClass } from './utils.mjs';
 
     const dispatch = createEventDispatcher();
 
     export let value;
     export let types;
     export let error = false;
+    export let className = '';
+
+    export let id = undefined;
 
     let focusSelect = false;
     let focusInput = false;
@@ -22,8 +26,6 @@
     function onTypeChanged() {}
 
     $: focus = focusSelect || focusInput;
-
-    $: selectedType = types[$value.type];
 
     $: if (_focus !== focus) {
         if (_focus !== undefined) {
@@ -49,10 +51,19 @@
             })
             .filter(Boolean)
     );
+
+    $: selectedType = _types[$value.type];
+
+    function expand() {
+        if (!selectedType?.expand) return;
+        selectedType.expand($value.value, (val) => {
+            $value.value = val;
+        });
+    }
 </script>
 
 <div
-    class="red-ui-typedInput-container rs4r-typedinput"
+    class={mergeClass('red-ui-typedInput-container rs4r-typedinput', className)}
     class:red-ui-typedInput-focus={focus}
     class:input-error={error}
 >
@@ -75,14 +86,20 @@
         {:else if selectedType.hasValue ?? true}
             <div class="red-ui-typedInput-input-wrap">
                 <AutoComplete
-                    value={$value.value}
+                    bind:value={$value.value}
                     suggestions={selectedType.suggestions}
                     className="red-ui-typedInput-input"
                     highlightFocused={false}
                     bind:focusState={focusInput}
                     bind:inputElement
+                    {id}
                 />
             </div>
+            {#if selectedType.expand}
+                <button type="button" class="red-ui-typedInput-option-expand" on:click={expand}>
+                    <Icon icon={{ fa4: 'ellipsis-h' }} class="red-ui-typedInput-icon" />
+                </button>
+            {/if}
         {/if}
     {/if}
 </div>

@@ -3,9 +3,10 @@
     import Icon from '../../Icon.svelte';
     import RenderType from './RenderType.svelte';
     import { selection } from '../selection.mjs';
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, getAllContexts } from 'svelte';
 
     const dispatch = createEventDispatcher();
+    const context = getAllContexts();
 
     export let type;
 
@@ -57,6 +58,10 @@
         type: t
     }));
 
+    $: if (!(type in types)) {
+        type = $selectionOptions[0].value;
+    }
+
     $: selectedType = types[type];
 
     $: focusState = isFocused || $menuShown;
@@ -66,7 +71,7 @@
     type="button"
     class="red-ui-typedInput-type-select"
     class:red-ui-typedInput-full-width={!selectedType || !(selectedType.hasValue ?? true)}
-    on:click={() => ($menuShown = true)}
+    on:click={() => ($menuShown = !$menuShown)}
     on:focus={() => (isFocused = true)}
     on:blur={() => (isFocused = false)}
     on:keydown={keydown}
@@ -82,7 +87,8 @@
             }
             $menuShown = false;
             dispatch('selected');
-        }
+        },
+        context
     }}
 >
     <Icon icon={{ fa4: 'caret-down' }} class="red-ui-typedInput-icon" />

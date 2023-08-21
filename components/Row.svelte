@@ -6,7 +6,7 @@
     export { classes as class };
 </script>
 
-<div class={mergeClass(classes)}>
+<div class={mergeClass('form-row', classes)}>
     <slot />
 </div>
 
@@ -15,7 +15,6 @@
         display: flex;
         flex-direction: row;
         gap: 5px;
-        margin-bottom: 12px;
         align-items: center;
     }
 

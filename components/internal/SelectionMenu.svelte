@@ -3,7 +3,6 @@
 <script>
     import { onMount, tick } from 'svelte';
     import Text from './Text.svelte';
-    import { onresize } from './actions.mjs';
     import { mergeClass } from './utils.mjs';
 
     export let shown;
@@ -74,6 +73,7 @@
     }
 
     export async function refreshPosition() {
+        if (!$shown) return;
         await tick();
         const targetBounding = target.getBoundingClientRect();
         const divBounding = container.getBoundingClientRect();
@@ -108,7 +108,6 @@
     class:rs4r-shown={$shown}
     on:focusout={focusOut}
     bind:this={container}
-    use:onresize={refreshPosition}
 >
     {#each $options as option}
         <button

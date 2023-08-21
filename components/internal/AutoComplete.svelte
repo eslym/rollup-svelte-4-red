@@ -7,11 +7,12 @@
 <script>
     import { writable } from 'svelte/store';
     import { mergeClass } from './utils.mjs';
-    import { createEventDispatcher } from 'svelte';
+    import { createEventDispatcher, getAllContexts } from 'svelte';
     import { selection } from './selection.mjs';
     import AutoCompleteSuggestion from './AutoCompleteSuggestion.svelte';
 
     const dispatch = createEventDispatcher();
+    const context = getAllContexts();
 
     export let value;
     export let placeholder = '';
@@ -26,6 +27,8 @@
 
     export let focusState = false;
     export let highlightFocus = true;
+
+    export let id = undefined;
 
     let isFocused;
 
@@ -146,6 +149,7 @@
 </script>
 
 <input
+    {id}
     bind:this={_input}
     bind:value
     class={mergeClass('rs4r-input rs4r-autocomplete', className)}
@@ -167,7 +171,8 @@
         options: _suggestions,
         shown: menuShown,
         focus: menuFocus,
-        onSelect: applySuggestion
+        onSelect: applySuggestion,
+        context
     }}
 />
 

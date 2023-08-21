@@ -1,6 +1,12 @@
 <script context="module">
     import * as builtinTypes from './internal/typed-input/builtin-types.mjs';
     export { builtinTypes };
+
+    let id = 0;
+
+    function getId() {
+        return ++id;
+    }
 </script>
 
 <script>
@@ -22,6 +28,8 @@
     export let icon = undefined;
     export let types;
 
+    let id = getId();
+
     $: wrapper = inline ? Inline : Row;
 </script>
 
@@ -38,29 +46,31 @@
 >
     <svelte:component this={wrapper}>
         {#if label}
-            <label class:rs4r-label-in-row={!inline} for={undefined}>
-                <span>
-                    {#if icon}
-                        <Icon {icon} />
-                    {/if}
-                    {label}
-                </span>
-                <InternalTypedInput
-                    value={_value}
-                    error={_invalid}
-                    required={_required}
-                    types={_propDef?.types ?? types}
-                    {placeholder}
-                    {disabled}
-                    on:change
-                    on:click
-                    on:focus
-                    on:blur
-                    on:keydown
-                    on:keyup
-                    on:input
-                />
+            <label class:rs4r-in-row={!inline} for="rs4r-input-{id}">
+                {#if icon}
+                    <Icon {icon} />
+                {/if}
+                {label}
             </label>
+            <InternalTypedInput
+                value={_value}
+                error={_invalid}
+                required={_required}
+                types={_propDef?.types ?? types}
+                id="rs4r-input-{id}"
+                className={{
+                    'rs4r-in-row': !inline
+                }}
+                {placeholder}
+                {disabled}
+                on:change
+                on:click
+                on:focus
+                on:blur
+                on:keydown
+                on:keyup
+                on:input
+            />
         {:else}
             <InternalTypedInput
                 value={_value}
@@ -82,16 +92,12 @@
 </ValueHelper>
 
 <style>
-    label {
+    label.rs4r-in-row {
         display: flex;
         align-items: center;
-        gap: 5px;
-        width: 100%;
-    }
-    label.rs4r-label-in-row > span {
         width: 100px;
     }
-    label.rs4r-label-in-row > :global(.rs4r-typedinput) {
+    :global(.rs4r-typedinput.rs4r-in-row) {
         flex-grow: 1;
         margin: 0;
     }

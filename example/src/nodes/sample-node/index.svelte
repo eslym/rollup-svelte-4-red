@@ -34,7 +34,8 @@
                     types: {
                         msg: true,
                         str: true,
-                        num: true
+                        num: true,
+                        json: true
                     }
                 },
                 _version: {

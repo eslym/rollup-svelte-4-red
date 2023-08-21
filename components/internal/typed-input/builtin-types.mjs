@@ -1,3 +1,5 @@
+import Placeholder from '../Inline.svelte';
+
 const msgCompletions = [
     { value: 'payload' },
     { value: 'topic', source: ['mqtt', 'inject', 'rbe'] },
@@ -61,26 +63,6 @@ const msgCompletions = [
     { value: '_session', source: ['websocket out', 'tcp out'] }
 ];
 
-const contextParse = function (v, defaultStore) {
-    var parts = RED.utils.parseContextKey(v, defaultStore && defaultStore.value);
-    return {
-        option: parts.store,
-        value: parts.key
-    };
-};
-
-const contextExport = function (v, opt) {
-    if (!opt) {
-        return v;
-    }
-    var store = typeof opt === 'string' ? opt : opt.value;
-    if (store !== RED.settings.context.default) {
-        return '#:(' + store + ')::' + v;
-    } else {
-        return v;
-    }
-};
-
 export const msg = {
     label: 'msg.',
     validate: RED.utils.validatePropertyExpression,
@@ -92,9 +74,7 @@ export const flow = {
     hasValue: true,
     options: [],
     validate: RED.utils.validatePropertyExpression,
-    parse: contextParse,
-    export: contextExport,
-    valueLabel: Symbol('placeholder') /* TODO: make component */
+    valueLabel: Placeholder /* TODO: make component */
 };
 
 export const global = {
@@ -102,9 +82,7 @@ export const global = {
     hasValue: true,
     options: [],
     validate: RED.utils.validatePropertyExpression,
-    parse: contextParse,
-    export: contextExport,
-    valueLabel: Symbol('placeholder') /* TODO: make component */
+    valueLabel: Placeholder /* TODO: make component */
 };
 
 export const str = {
@@ -237,5 +215,5 @@ export const node = {
     }
 };
 
-// TODO:
-export const credentials = Symbol('placeholder');
+// TODO: make creds
+export const creds = Symbol('placeholder');

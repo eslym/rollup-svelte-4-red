@@ -10,7 +10,9 @@
         {
             "files": "*.svelte",
             "options": {
-                "parser": "svelte"
+                "parser": "svelte",
+                "svelteAllowShorthand": true,
+                "svelteStrictMode": false
             }
         }
     ]
