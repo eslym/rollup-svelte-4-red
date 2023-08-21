@@ -32,6 +32,7 @@
                         value: 'payload'
                     },
                     types: {
+                        undefined: true,
                         msg: true,
                         str: true,
                         num: true,
