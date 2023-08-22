@@ -1,4 +1,5 @@
-import Placeholder from '../Inline.svelte';
+import NodeInput from './NodeInput.svelte';
+import ContextInput from './ContextInput.svelte';
 
 const msgCompletions = [
     { value: 'payload' },
@@ -74,7 +75,7 @@ export const flow = {
     hasValue: true,
     options: [],
     validate: RED.utils.validatePropertyExpression,
-    valueLabel: Placeholder /* TODO: make component */
+    valueLabel: ContextInput
 };
 
 export const global = {
@@ -82,7 +83,7 @@ export const global = {
     hasValue: true,
     options: [],
     validate: RED.utils.validatePropertyExpression,
-    valueLabel: Placeholder /* TODO: make component */
+    valueLabel: ContextInput
 };
 
 export const str = {
@@ -143,7 +144,7 @@ export const json = {
 
 export const re = {
     label: 'regular expression',
-    icon: { svgMask: 'red/images/typedInput/re.svg' }
+    icon: { maskSvg: 'red/images/typedInput/re.svg' }
 };
 
 export const timestamp = {
@@ -154,7 +155,7 @@ export const timestamp = {
 
 export const jsonata = {
     label: 'expression',
-    icon: { svgMask: 'red/images/typedInput/expr.svg' },
+    icon: { maskSvg: 'red/images/typedInput/expr.svg' },
     validate: function (v) {
         try {
             jsonata(v);
@@ -177,7 +178,7 @@ export const jsonata = {
 
 export const bin = {
     label: 'buffer',
-    icon: { svgMask: 'red/images/typedInput/bin.svg' },
+    icon: { maskSvg: 'red/images/typedInput/bin.svg' },
     expand: function (value, update) {
         RED.editor.editBuffer({
             value: value,
@@ -192,13 +193,13 @@ export const bin = {
 
 export const env = {
     label: 'env variable',
-    icon: { svgMask: 'red/images/typedInput/env.svg' }
+    icon: { maskSvg: 'red/images/typedInput/env.svg' }
 };
 
 export const node = {
     label: 'node',
-    icon: { svgMask: 'red/images/typedInput/target.svg' },
-    valueLabel: Symbol('placeholder') /* TODO: make a component */,
+    icon: { maskSvg: 'red/images/typedInput/target.svg' },
+    valueLabel: NodeInput,
     expand: function (value, update) {
         RED.tray.hide();
         RED.view.selectNodes({

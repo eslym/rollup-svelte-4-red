@@ -23,6 +23,7 @@
     const menuShown = writable(false);
 
     function keydown(ev) {
+        if ($selectionOptions.length <= 1) return;
         if ($menuShown) {
             if (ev.key === 'ArrowDown') {
                 ev.preventDefault();
@@ -98,7 +99,9 @@
         context
     }}
 >
-    <Icon icon={{ fa4: 'caret-down' }} class="red-ui-typedInput-icon" />
+    {#if $selectionOptions.length > 1}
+        <Icon icon={{ fa4: 'caret-down' }} class="red-ui-typedInput-icon" />
+    {/if}
     <span class="red-ui-typedInput-type-label rs4r-typedinput-type-label">
         {#if selectedType}
             <!-- svelte-ignore reactive-component -->

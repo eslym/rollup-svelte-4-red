@@ -23,22 +23,39 @@ export interface MenuOptions {
 }
 
 export interface Selection {
-    component: SvelteComponent;
+    component: typeof SvelteComponent;
     value: any;
+}
+
+export interface SelectOption {
+    component?: typeof SvelteComponent;
+    icon?: IconSource;
+    label: string;
+    value: string;
 }
 
 export interface SelectionOption {
     shown: Writable<boolean>;
     focus: Writable<() => void>;
-    component?: SvelteComponent;
+    component?: typeof SvelteComponent;
     onSelect: (value: any) => void;
     options: Writable<(Selection | string)[]>;
 }
 
 export interface AutoCompleteSuggestion {
-    component: SvelteComponent;
+    component: typeof SvelteComponent;
     value: string;
     source?: string[];
+}
+
+export interface TypeDefinition {
+    label: string;
+    icon?: IconSource;
+    hasValue?: boolean;
+    options?: (SelectOption | string)[];
+    viewLabel?: typeof SvelteComponent;
+    validate?: (value: string) => boolean;
+    expand?: (value: string, update: (val: string) => void) => void;
 }
 
 export class Row extends SvelteComponent<
@@ -119,7 +136,7 @@ export class TypedInput extends SvelteComponent<
         disabled?: boolean;
         required?: boolean;
         novalidate?: boolean;
-        types: Record<string, any>;
+        types: Record<string, TypeDefinition | true> | BuiltInTypes[];
     },
     {
         change: Event;
@@ -128,7 +145,9 @@ export class TypedInput extends SvelteComponent<
         typechange: CustomEvent<{ old: string; new: string }>;
     },
     {}
-> {}
+> {
+    static builtinTypes: Record<BuiltInTypes, TypeDefinition>;
+}
 
 export class Icon extends SvelteComponent<
     {
@@ -175,8 +194,6 @@ export function onintersect(
               callback: (entry: IntersectionObserverEntry) => void;
           })
 ): { destroy(): void };
-
-export const builtinTypes: Record<string, any>;
 
 type FronAwesome4Icons = [
     'address-book',
@@ -965,4 +982,22 @@ type FronAwesome4Icons = [
     'medkit',
     'stethoscope',
     'user-md'
+][number];
+
+type BuiltInTypes = [
+    'str',
+    'msg',
+    'flow',
+    'global',
+    'env',
+    'num',
+    'bool',
+    'json',
+    're',
+    'timestamp',
+    'jsonata',
+    'bin',
+    'node',
+    'undefined',
+    'creds'
 ][number];

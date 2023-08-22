@@ -34,10 +34,13 @@
                     types: {
                         undefined: true,
                         msg: true,
+                        flow: true,
+                        global: true,
                         str: true,
                         num: true,
                         bool: true,
-                        json: true
+                        json: true,
+                        node: true
                     }
                 },
                 _version: {

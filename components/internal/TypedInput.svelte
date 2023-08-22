@@ -24,9 +24,11 @@
 
     let inputElement = undefined;
 
+    let focusWithin = false;
+
     let _focus = undefined;
 
-    $: focus = focusSelect || focusInput;
+    $: focus = focusSelect || focusInput || focusWithin;
 
     $: if (_focus !== focus) {
         if (_focus !== undefined) {
@@ -73,6 +75,10 @@
     class={mergeClass('red-ui-typedInput-container rs4r-typedinput', className)}
     class:red-ui-typedInput-focus={focus}
     class:input-error={error}
+    on:focusin={() => (focusWithin = true)}
+    on:focusout={function () {
+        focusWithin = this.matches(':focus-within');
+    }}
 >
     <SelectType
         bind:type={$value.type}
@@ -83,14 +89,7 @@
         on:selected={() => tick().then(() => inputElement?.focus?.())}
     />
     {#if selectedType}
-        {#if selectedType.viewLabel}
-            <svelte:component
-                this={selectedType.valueLabel}
-                bind:value={$value.value}
-                type={selectedType}
-                {disabled}
-            />
-        {:else if selectedType.options}
+        {#if selectedType.options && selectedType.options.length > 0}
             <Select
                 className="red-ui-typedInput-option-trigger"
                 options={selectedType.options}
@@ -100,19 +99,33 @@
                 {id}
             />
         {:else if selectedType.hasValue ?? true}
-            <div class="red-ui-typedInput-input-wrap">
-                <AutoComplete
-                    bind:value={$value.value}
-                    suggestions={selectedType.suggestions}
-                    className="red-ui-typedInput-input"
-                    highlightFocused={false}
-                    on:change={() => dispatch('change')}
-                    bind:focusState={focusInput}
-                    bind:inputElement
-                    {disabled}
-                    {id}
-                />
-            </div>
+            {#if selectedType.valueLabel}
+                <div class="red-ui-typedInput-value-label">
+                    <svelte:component
+                        this={selectedType.valueLabel}
+                        bind:value={$value.value}
+                        bind:focusState={focusInput}
+                        type={selectedType}
+                        {id}
+                        bind:inputElement
+                        {disabled}
+                    />
+                </div>
+            {:else}
+                <div class="red-ui-typedInput-input-wrap">
+                    <AutoComplete
+                        bind:value={$value.value}
+                        suggestions={selectedType.suggestions}
+                        className="red-ui-typedInput-input"
+                        highlightFocused={false}
+                        on:change={() => dispatch('change')}
+                        bind:focusState={focusInput}
+                        bind:inputElement
+                        {disabled}
+                        {id}
+                    />
+                </div>
+            {/if}
             {#if selectedType.expand}
                 <button
                     type="button"

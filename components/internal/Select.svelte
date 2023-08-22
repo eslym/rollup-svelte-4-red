@@ -23,6 +23,8 @@
 
     export let id = undefined;
 
+    export let component = RenderOption;
+
     let isFocused = false;
 
     const selectionOptions = writable([]);
@@ -81,7 +83,7 @@
     }
 
     $: $selectionOptions = Object.values(valueMap).map((v) => ({
-        component: RenderOption,
+        component,
         ...v
     }));
 
@@ -117,8 +119,11 @@
 >
     <span class="rs4r-select-value">
         {#if selectedOption}
-            <!-- svelte-ignore reactive-component -->
-            <RenderOption option={selectedOption} />
+            {#if selectedOption.component}
+                <svelte:component this={selectedOption.component} option={selectedOption} view />
+            {:else}
+                <svelte:component this={component} option={selectedOption} view />
+            {/if}
         {:else if placeholder}
             <span class="rs4r-placeholder">{placeholder}</span>
         {/if}
@@ -133,6 +138,7 @@
         display: inline-flex;
         align-items: center;
         padding: 0 8px;
+        gap: 5px;
     }
     .rs4r-select-value {
         flex-grow: 1;

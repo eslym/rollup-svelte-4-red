@@ -36,7 +36,7 @@
         ) {
             req = true;
         }
-        _invalid = req || (validator ? !validator(v) : false);
+        _invalid = req || (validator ? !validator.call($editingNode, v) : false);
     }
 
     function sync(p, t, c, r) {
