@@ -27,11 +27,17 @@
 
     let isFocused = false;
 
+    let _focus = undefined;
+
     const selectionOptions = writable([]);
     const focus = writable(() => {});
     const menuShown = writable(false);
 
     function keydown(ev) {
+        if (!dispatch('keydown', ev, { cancelable: true })) {
+            ev.preventDefault();
+            return;
+        }
         if ($menuShown) {
             if (ev.key === 'ArrowDown') {
                 ev.preventDefault();
@@ -90,6 +96,13 @@
     $: selectedOption = valueMap[value];
 
     $: focusState = isFocused || $menuShown;
+
+    $: if (_focus !== focusState) {
+        if (_focus !== undefined) {
+            dispatch(focusState ? 'focus' : 'blur');
+        }
+        _focus = focusState;
+    }
 </script>
 
 <button
@@ -102,6 +115,7 @@
     on:focus={() => (isFocused = true)}
     on:blur={() => (isFocused = false)}
     on:keydown={keydown}
+    on:keyup
     use:selection={{
         options: selectionOptions,
         focus,

@@ -220,6 +220,3 @@ export const undefined = {
     label: 'undefined',
     hasValue: false
 };
-
-// TODO: make creds
-export const creds = Symbol('placeholder');

@@ -998,6 +998,5 @@ type BuiltInTypes = [
     'jsonata',
     'bin',
     'node',
-    'undefined',
-    'creds'
+    'undefined'
 ][number];
