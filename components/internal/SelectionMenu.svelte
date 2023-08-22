@@ -2,12 +2,12 @@
 
 <script>
     import { onMount, tick } from 'svelte';
-    import Text from './Text.svelte';
+    import RenderOption from './RenderOption.svelte';
     import { mergeClass } from './utils.mjs';
 
     export let shown;
     export let focus;
-    export let component = Text;
+    export let component = RenderOption;
     export let minWidth = 0;
 
     export let onSelect = undefined;
@@ -132,7 +132,7 @@
         display: block;
         position: fixed;
         box-sizing: border-box;
-        max-height: 200px;
+        max-height: 300px;
         overflow: auto;
         box-shadow: 1px 1px 4px var(--red-ui-shadow);
         font-family: var(--red-ui-primary-font);

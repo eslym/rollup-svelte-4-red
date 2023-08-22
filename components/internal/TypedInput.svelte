@@ -6,6 +6,7 @@
     import { createEventDispatcher, tick } from 'svelte';
     import Icon from '../Icon.svelte';
     import { mergeClass } from './utils.mjs';
+    import Select from './Select.svelte';
 
     const dispatch = createEventDispatcher();
 
@@ -16,14 +17,14 @@
 
     export let id = undefined;
 
+    export let disabled = false;
+
     let focusSelect = false;
     let focusInput = false;
 
     let inputElement = undefined;
 
     let _focus = undefined;
-
-    function onTypeChanged() {}
 
     $: focus = focusSelect || focusInput;
 
@@ -58,7 +59,13 @@
         if (!selectedType?.expand) return;
         selectedType.expand($value.value, (val) => {
             $value.value = val;
+            dispatch('change');
         });
+    }
+
+    function onTypeChanged(ev) {
+        dispatch('typechange', ev.detail);
+        dispatch('change');
     }
 </script>
 
@@ -71,7 +78,8 @@
         bind:type={$value.type}
         types={_types}
         bind:focusState={focusSelect}
-        on:change
+        {disabled}
+        on:change={onTypeChanged}
         on:selected={() => tick().then(() => inputElement?.focus?.())}
     />
     {#if selectedType}
@@ -80,9 +88,17 @@
                 this={selectedType.valueLabel}
                 bind:value={$value.value}
                 type={selectedType}
+                {disabled}
             />
         {:else if selectedType.options}
-            <!-- TODO: make dropdown select -->
+            <Select
+                className="red-ui-typedInput-option-trigger"
+                options={selectedType.options}
+                bind:focusState={focusInput}
+                on:change={() => dispatch('change')}
+                {disabled}
+                {id}
+            />
         {:else if selectedType.hasValue ?? true}
             <div class="red-ui-typedInput-input-wrap">
                 <AutoComplete
@@ -90,13 +106,20 @@
                     suggestions={selectedType.suggestions}
                     className="red-ui-typedInput-input"
                     highlightFocused={false}
+                    on:change={() => dispatch('change')}
                     bind:focusState={focusInput}
                     bind:inputElement
+                    {disabled}
                     {id}
                 />
             </div>
             {#if selectedType.expand}
-                <button type="button" class="red-ui-typedInput-option-expand" on:click={expand}>
+                <button
+                    type="button"
+                    class="red-ui-typedInput-option-expand"
+                    on:click={expand}
+                    {disabled}
+                >
                     <Icon icon={{ fa4: 'ellipsis-h' }} class="red-ui-typedInput-icon" />
                 </button>
             {/if}

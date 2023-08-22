@@ -41,9 +41,15 @@ export interface AutoCompleteSuggestion {
     source?: string[];
 }
 
-export class Row extends SvelteComponent<{
-    class?: string | Record<string, boolean>;
-}> {}
+export class Row extends SvelteComponent<
+    {
+        class?: string | Record<string, boolean>;
+    },
+    {},
+    {
+        default: {};
+    }
+> {}
 
 export class Input extends SvelteComponent<
     {
@@ -99,9 +105,7 @@ export class AutoComplete extends SvelteComponent<
         blur: CustomEvent;
         input: Event;
     },
-    {
-        default: {};
-    }
+    {}
 > {}
 
 export class TypedInput extends SvelteComponent<
@@ -118,8 +122,12 @@ export class TypedInput extends SvelteComponent<
         types: Record<string, any>;
     },
     {
-        default: {};
-    }
+        change: Event;
+        blur: CustomEvent;
+        focus: CustomEvent;
+        typechange: CustomEvent<{ old: string; new: string }>;
+    },
+    {}
 > {}
 
 export class Icon extends SvelteComponent<

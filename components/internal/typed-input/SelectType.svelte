@@ -14,6 +14,8 @@
 
     export let focusState = false;
 
+    export let disabled = false;
+
     let isFocused = false;
 
     const selectionOptions = writable([]);
@@ -71,6 +73,7 @@
     type="button"
     class="red-ui-typedInput-type-select"
     class:red-ui-typedInput-full-width={!selectedType || !(selectedType.hasValue ?? true)}
+    {disabled}
     on:click={() => ($menuShown = !$menuShown)}
     on:focus={() => (isFocused = true)}
     on:blur={() => (isFocused = false)}
@@ -82,8 +85,12 @@
         class: 'rs4r-typedinput-select-options',
         onSelect(option) {
             if (type !== option.value) {
+                const old = type;
                 type = option.value;
-                dispatch('change');
+                dispatch('change', {
+                    old,
+                    new: type
+                });
             }
             $menuShown = false;
             dispatch('selected');

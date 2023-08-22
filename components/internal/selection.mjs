@@ -1,4 +1,4 @@
-import Text from './Text.svelte';
+import RenderOption from './RenderOption.svelte';
 import SelectionMenu from './SelectionMenu.svelte';
 import { writable } from 'svelte/store';
 
@@ -17,7 +17,7 @@ export function selection(element, options) {
             focus,
             options: options.options,
             onSelect: options.onSelect ? options.onSelect : () => {},
-            component: options.component ? options.component : Text,
+            component: options.component ? options.component : RenderOption,
             minWidth: element.offsetWidth,
             class: options.class,
             target: element
@@ -42,7 +42,7 @@ export function selection(element, options) {
         update(options) {
             menu.$set({
                 onSelect: options.onSelect ? options.onSelect : () => {},
-                component: options.component ? options.component : Text,
+                component: options.component ? options.component : RenderOption,
                 class: options.class
             });
             menu.refreshPosition();

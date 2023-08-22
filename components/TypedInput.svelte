@@ -64,12 +64,9 @@
                 {placeholder}
                 {disabled}
                 on:change
-                on:click
                 on:focus
                 on:blur
-                on:keydown
-                on:keyup
-                on:input
+                on:typechange
             />
         {:else}
             <InternalTypedInput
@@ -80,12 +77,10 @@
                 {placeholder}
                 {disabled}
                 on:change
-                on:click
                 on:focus
                 on:blur
-                on:keydown
-                on:keyup
                 on:input
+                on:typechange
             />
         {/if}
     </svelte:component>

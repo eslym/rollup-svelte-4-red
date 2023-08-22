@@ -36,6 +36,7 @@
                         msg: true,
                         str: true,
                         num: true,
+                        bool: true,
                         json: true
                     }
                 },
