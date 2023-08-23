@@ -1,7 +1,4 @@
 <script context="module">
-    import * as builtinTypes from './internal/typed-input/builtin-types.mjs';
-    export { builtinTypes };
-
     let id = 0;
 
     function getId() {

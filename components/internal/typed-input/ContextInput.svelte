@@ -8,7 +8,7 @@
     export let id = '';
     export let focusState;
 
-    let _value;
+    let _value = NaN;
 
     const stores = RED.settings.context.stores;
 
@@ -24,6 +24,7 @@
         property = parts.key;
         _value = v;
     }
+    spiltContext(value);
 
     $: contextString = stores.length <= 1 ? property : `#:(${store})::${property}`;
 

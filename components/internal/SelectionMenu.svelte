@@ -119,9 +119,7 @@
             {#if typeof option === 'string'}
                 <svelte:component this={component} {option} />
             {:else if typeof option === 'object' && option.component}
-                <svelte:component this={option.component} {option} />
-            {:else}
-                <span style="color:red;"><code>option.component</code> is not set!!</span>
+                <svelte:component this={option.component ?? component} {option} />
             {/if}
         </button>
     {/each}

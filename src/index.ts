@@ -1,387 +1,171 @@
-import type { RollupOptions, InputPluginOption, Plugin, ExternalOption } from 'rollup';
-import svelte from 'rollup-plugin-svelte';
-import resolve from '@rollup/plugin-node-resolve';
-import replace from '@rollup/plugin-replace';
-import commonjs from '@rollup/plugin-commonjs';
-import alias from '@rollup/plugin-alias';
-import virtual from '@rollup/plugin-virtual';
-import css from 'rollup-plugin-import-css';
-import crypto from 'crypto';
-import fs from 'fs';
-import path from 'path';
-import entryTemplate from './entry.tiny.hbs';
-import htmlTemplate from './html.tiny.hbs';
-import packageTemplate from './package.tiny.hbs';
-import injectCss from './css.tiny.hbs';
-import { globSync as glob } from 'glob';
-import { normalizePath } from '@rollup/pluginutils';
+import type { Node, NodeAPI, NodeContextData, NodeMessage } from 'node-red';
+import { type BuiltInTypes, builtinTypes } from './typedInput/builtin-types';
+import { error } from './error';
 
-export type Options = {
-    nodeSrc?: string;
-    outDir?: string;
-    libDir?: string;
-    sharedLibDir?: string;
-    examplesDir?: string | false;
-    editorLibDir?: string;
-    rollupPlugins?: InputPluginOption[];
-    svelteOptions?: Omit<Parameters<typeof svelte>[0], 'compilerOptions'>;
-    packageJsonOverride?: Record<string, any>;
-    editorExternalDeps?: ExternalOption;
-    nodeExternalDeps?: ExternalOption;
-    readme?: string | false;
-    sourceMap?: boolean | 'inline' | 'hidden';
-    clean?: boolean;
-};
-
-function extractNodeName(file: string, src: string) {
-    const node = path.dirname(path.relative(src, file));
-    return normalizePath(node).replace(/\//g, '.');
+interface AsyncContext {
+    get<T = any>(key: string, store?: string): Promise<T>;
+    get<T = any>(keys: string[], store?: string): Promise<T[]>;
+    set<T = any>(key: string, value: T, store?: string): Promise<void>;
+    set<T = any>(keys: string[], values: T[], store?: string): Promise<void>;
+    keys(store?: string): Promise<string[]>;
 }
 
-function stripExt(file: string) {
-    return file.slice(0, file.lastIndexOf('.'));
+interface TypedInputValue {
+    type: string;
+    value: string;
+    [key: string]: any;
 }
 
-export default function makeConfig(options: Options): RollupOptions[] {
-    const opts: Required<
-        Omit<Options, 'packageJsonOverride' | 'libDir' | 'editorLibDir' | 'sharedLibDir'>
-    > = {
-        nodeSrc: './src/nodes',
-        outDir: './dist',
-        examplesDir: './examples',
-        rollupPlugins: [],
-        svelteOptions: {},
-        editorExternalDeps: [],
-        nodeExternalDeps: [],
-        sourceMap: false,
-        readme: 'README.md',
-        clean: true,
-        ...options
-    };
-    const libDir = options.libDir ?? './src/lib';
-    const editorLibDir = options.editorLibDir ?? './src/editor';
-    const sharedLibDir = options.sharedLibDir ?? './src/shared';
-    const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
+export interface RS4RNodeWrapper {
+    node: Node;
+    RED: NodeAPI;
+    global: AsyncContext;
+    flow: AsyncContext;
+    evaluate<T = any>(
+        msg: NodeMessage,
+        typedInput: TypedInputValue,
+        types?: EvaluationTypes
+    ): Promise<T>;
+    set(
+        msg: NodeMessage,
+        typedInput: TypedInputValue,
+        value: any,
+        types?: SetterTypes
+    ): Promise<void>;
+}
 
-    for (const [key, value] of Object.entries(options.packageJsonOverride ?? {})) {
-        pkg[key] = value;
+export type EvaluationFunction<T extends any | Promise<any> = any> = (
+    this: RS4RNodeWrapper,
+    msg: NodeMessage,
+    value: string,
+    typedInput: TypedInputValue
+) => T;
+
+export type SetterFunc = (
+    this: RS4RNodeWrapper,
+    msg: NodeMessage,
+    property: string,
+    value: any,
+    typedInput: TypedInputValue
+) => Promise<void>;
+
+export type TypeDefinition<T = any> =
+    | {
+          get: EvaluationFunction<T>;
+          set?: SetterFunc;
+      }
+    | {
+          set: SetterFunc;
+      };
+
+type EvaluationTypes = Record<string, EvaluationFunction | TypeDefinition | true> | BuiltInTypes[];
+
+type SetterTypes =
+    | Record<string, SetterFunc | TypeDefinition | true>
+    | ('msg' | 'flow' | 'global')[];
+
+function wrapContextCall(ctx: NodeContextData, func: Function, ...args: any[]) {
+    return new Promise((resolve, reject) => {
+        func.call(ctx, ...args, (err: any, result: any) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
+
+function wrapContext(ctx: NodeContextData): AsyncContext {
+    return {
+        get(key: string | string[], store?: string) {
+            return wrapContextCall(ctx, ctx.get, key, store) as any;
+        },
+        set(key: string | string[], value: any, store?: string) {
+            return wrapContextCall(ctx, ctx.set, key, value, store) as any;
+        },
+        keys(store?: string) {
+            return wrapContextCall(ctx, ctx.keys, store) as any;
+        }
+    };
+}
+
+async function evaluateTypedInput(
+    this: RS4RNodeWrapper,
+    msg: NodeMessage,
+    typedInput: TypedInputValue,
+    types: EvaluationTypes = builtinTypes
+): Promise<any> {
+    if (Array.isArray(types)) {
+        types = Object.fromEntries(types.map((type) => [type, builtinTypes[type]]));
     }
-
-    const search = path.join(opts.nodeSrc, '*/**/index.{js,ts}');
-    const nodeSource = glob(normalizePath(search));
-
-    const nodeMap: {
-        [name: string]: {
-            name: string;
-            path: string;
-            fullPath: string;
-            dist: string;
-            svelte: string;
-        };
-    } = {};
-
-    const nodeNames = new Map<string, string>();
-
-    for (const p of nodeSource) {
-        const nodeName = extractNodeName(p, opts.nodeSrc);
-        if (nodeName in nodeMap) {
-            throw new Error(`${p} is conflicted with ${nodeMap[nodeName].path}`);
-        }
-        const fullPath = path.resolve(p);
-        const noExt = stripExt(fullPath);
-        nodeMap[nodeName] = {
-            name: nodeName,
-            path: p,
-            svelte: `${noExt}.svelte`,
-            dist: path.join(opts.outDir, `${nodeName}.js`),
-            fullPath
-        };
-        nodeNames.set(noExt, nodeName);
+    if (!(typedInput.type in types)) {
+        throw error('INVALID_TYPE', `Invalid type: ${typedInput.type}`);
     }
+    let type = types[typedInput.type];
+    if (typeof type === 'function') {
+        return type.call(this, msg, typedInput.value, typedInput);
+    }
+    if (type === true) {
+        if (!(typedInput.type in builtinTypes))
+            throw error('INVALID_TYPE', `Invalid type: ${typedInput.type}`);
+        type = builtinTypes[typedInput.type as BuiltInTypes];
+    }
+    if (!('get' in type)) throw error('INVALID_TYPE', `Invalid type: ${typedInput.type}`);
+    return type.get.call(this, msg, typedInput.value, typedInput);
+}
 
-    const nodeRedIcons = new Map<
-        string,
-        {
-            type: 'asset';
-            name: string;
-            fileName: string;
-            source: Uint8Array;
-        }
-    >();
+async function setByTypedInput(
+    this: RS4RNodeWrapper,
+    msg: NodeMessage,
+    typedInput: TypedInputValue,
+    value: any,
+    types: SetterTypes = builtinTypes
+) {
+    if (Array.isArray(types)) {
+        types = Object.fromEntries(types.map((type) => [type, builtinTypes[type]]));
+    }
+    if (!(typedInput.type in types)) {
+        throw error('INVALID_TYPE', `Invalid type: ${typedInput.type}`);
+    }
+    let type = types[typedInput.type];
+    if (typeof type === 'function') {
+        return type.call(this, msg, typedInput.value, value, typedInput);
+    }
+    if (type === true) {
+        if (!(typedInput.type in builtinTypes))
+            throw error('INVALID_TYPE', `Invalid type: ${typedInput.type}`);
+        type = builtinTypes[typedInput.type as BuiltInTypes];
+    }
+    if (!('set' in type)) throw error('INVALID_TYPE', `Invalid type: ${typedInput.type}`);
+    return type.set!.call(this, msg, typedInput.value, value, typedInput);
+}
 
-    const resources = {
-        entry: '',
-        styles: [] as string[]
-    };
+const nodeVars = new WeakMap<Node, RS4RNodeWrapper>();
 
-    const buildNodeEditor: Plugin = {
-        name: 'node-red-editor-build',
-
-        renderStart() {
-            if (opts.clean && fs.existsSync(opts.outDir)) {
-                fs.rmSync(opts.outDir, { recursive: true });
-            }
-        },
-
-        load(id) {
-            if (id.endsWith('?red-icon')) {
-                const realPath = id.slice(0, -9);
-                const basename = path.basename(realPath);
-                const buffer = fs.readFileSync(realPath);
-                const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8);
-                const name = `${stripExt(basename)}-${hash}${path.extname(basename)}`;
-                nodeRedIcons.set(id, {
-                    type: 'asset',
-                    name: basename,
-                    fileName: `icons/${name}`,
-                    source: buffer
-                });
-                return `export default ${JSON.stringify(name)};`;
-            }
-            if (id.endsWith('?red-res')) {
-                const realPath = id.slice(0, -8);
-                const basename = path.basename(realPath);
-                const buffer = fs.readFileSync(realPath);
-                const hash = crypto.createHash('sha256').update(buffer).digest('hex').slice(0, 8);
-                const name = `assets/${stripExt(basename)}-${hash}${path.extname(basename)}`;
-                this.emitFile({
-                    type: 'asset',
-                    name: basename,
-                    fileName: name,
-                    source: buffer
-                });
-                return `export default ${JSON.stringify(`resources/${pkg.name}/${name}`)};`;
-            }
-        },
-
-        writeBundle(_, bundle) {
-            for (const chunk of Object.values(bundle)) {
-                switch (chunk.type) {
-                    case 'chunk': {
-                        if (chunk.isEntry) {
-                            resources.entry = chunk.fileName;
-                        }
-                        break;
-                    }
-                    case 'asset': {
-                        if (
-                            path.extname(chunk.fileName) === '.css' &&
-                            !chunk.fileName.startsWith(`resources/${pkg.name}/assets/`)
-                        ) {
-                            resources.styles.push(chunk.fileName);
-                        }
-                    }
-                }
-            }
-            const entryFile = path.join(opts.outDir, 'resources', resources.entry);
-            const script = fs.readFileSync(entryFile, 'utf8');
-            fs.writeFileSync(
-                entryFile,
-                script +
-                    injectCss(
-                        {
-                            package: {
-                                name: pkg.name,
-                                version: pkg.version
-                            },
-                            styles: resources.styles
-                        },
-                        { json: JSON.stringify }
-                    )
-            );
-        }
-    };
-
-    pkg['node-red'] = pkg['node-red'] ?? {};
-    pkg['node-red'].nodes = Object.fromEntries(
-        Object.entries(nodeMap).map(
-            ([name, node]) =>
-                [name, normalizePath(path.relative(opts.outDir, node.dist))] as [string, string]
-        )
-    );
-    pkg.type = 'commonjs';
-
-    const input = Object.fromEntries(
-        Object.entries(nodeMap).map(([name, node]) => [name, node.path] as [string, string])
-    );
-
-    const postBuild: Plugin = {
-        name: 'node-red-backend-post-build',
-
-        generateBundle() {
-            for (const asset of nodeRedIcons.values()) {
-                this.emitFile(asset);
-            }
-            for (const node of Object.values(nodeMap)) {
-                const noExt = stripExt(node.fullPath);
-                const htmlDoc = `${noExt}.html`;
-                const mdDoc = `${noExt}.md`;
-                let docType = '';
-                let docContent: string | undefined = undefined;
-                if (fs.existsSync(htmlDoc)) {
-                    docType = 'text/html';
-                    docContent = fs.readFileSync(htmlDoc, 'utf8');
-                } else if (fs.existsSync(mdDoc)) {
-                    docType = 'text/markdown';
-                    docContent = fs.readFileSync(mdDoc, 'utf8');
-                }
-                const html = htmlTemplate(
-                    {
-                        package: {
-                            name: pkg.name,
-                            version: pkg.version
-                        },
-                        bundleEntry: resources.entry,
-                        name: node.name,
-                        docType,
-                        docContent
-                    },
-                    {
-                        json: JSON.stringify
-                    }
-                );
-                this.emitFile({
-                    type: 'asset',
-                    fileName: `${node.name}.html`,
-                    source: html
-                });
-            }
-            this.emitFile({
-                type: 'asset',
-                fileName: 'package.json',
-                source: JSON.stringify(pkg, null, 2)
-            });
-            if (typeof opts.readme === 'string') {
-                this.emitFile({
-                    type: 'asset',
-                    fileName: 'README.md',
-                    source: fs.readFileSync(opts.readme, 'utf8')
-                });
-            }
-            if (typeof opts.examplesDir === 'string') {
-                const examples = glob(normalizePath(path.join(opts.examplesDir, '**/*')));
-                for (const example of examples) {
-                    const relative = path.relative(opts.examplesDir, example);
-                    const buffer = fs.readFileSync(example);
-                    this.emitFile({
-                        type: 'asset',
-                        fileName: `examples/${relative}`,
-                        source: buffer
-                    });
-                }
-            }
-        }
-    };
-
-    const $package = packageTemplate(pkg, { json: JSON.stringify });
-
-    return [
-        {
-            input: 'bundle.js',
-            output: {
-                dir: path.join(opts.outDir, 'resources'),
-                format: 'esm',
-                entryFileNames: 'bundle-[hash].js',
-                chunkFileNames: 'chunk-[hash].js',
-                assetFileNames: '[name]-[hash][extname]',
-                sourcemap: opts.sourceMap
+export function RS4R(node: Node, RED: NodeAPI) {
+    if (!nodeVars.has(node)) {
+        nodeVars.set(node, {
+            node,
+            RED,
+            global: wrapContext(node.context().global),
+            flow: wrapContext(node.context().flow),
+            evaluate(
+                msg: NodeMessage,
+                typedInput: TypedInputValue,
+                types: EvaluationTypes = builtinTypes
+            ) {
+                return evaluateTypedInput.call(nodeVars.get(node)!, msg, typedInput, types);
             },
-            plugins: [
-                opts.rollupPlugins,
-                svelte({
-                    emitCss: true,
-                    ...opts.svelteOptions
-                }),
-                commonjs(),
-                resolve({
-                    browser: true,
-                    dedupe: (importee) => importee === 'svelte' || importee.startsWith('svelte/'),
-                    preferBuiltins: false,
-                    exportConditions: ['svelte'],
-                    extensions: ['.svelte', '.js', '.cjs', '.mjs']
-                }),
-                replace({
-                    values: {
-                        __NODE_NAME__: (id) => JSON.stringify(nodeNames.get(stripExt(id)))
-                    },
-                    preventAssignment: true
-                }),
-                alias({
-                    entries: [
-                        {
-                            find: '$editor',
-                            replacement: path.resolve(editorLibDir)
-                        },
-                        {
-                            find: '$shared',
-                            replacement: path.resolve(sharedLibDir)
-                        },
-                        {
-                            find: '$package.json',
-                            replacement: path.resolve('./package.js')
-                        }
-                    ]
-                }),
-                virtual({
-                    'bundle.js': entryTemplate(
-                        {
-                            package: {
-                                name: pkg.name,
-                                version: pkg.version
-                            },
-                            imports: Object.values(nodeMap)
-                        },
-                        { json: JSON.stringify }
-                    ),
-                    'package.js': $package
-                }),
-                css(),
-                buildNodeEditor
-            ],
-            external: opts.editorExternalDeps
-        },
-        {
-            input,
-            output: {
-                dir: opts.outDir,
-                format: 'cjs',
-                entryFileNames: '[name].js',
-                chunkFileNames: 'lib/[name]-[hash].js',
-                assetFileNames: '[name]-[hash][extname]',
-                sourcemap: opts.sourceMap
-            },
-            plugins: [
-                opts.rollupPlugins,
-                resolve(),
-                commonjs(),
-                replace({
-                    values: {
-                        __NODE_NAME__: (id) => JSON.stringify(nodeNames.get(stripExt(id)))
-                    },
-                    preventAssignment: true
-                }),
-                alias({
-                    entries: [
-                        {
-                            find: '$lib',
-                            replacement: path.resolve(libDir)
-                        },
-                        {
-                            find: '$shared',
-                            replacement: path.resolve(sharedLibDir)
-                        },
-                        {
-                            find: '$package.json',
-                            replacement: path.resolve('./package.js')
-                        }
-                    ]
-                }),
-                virtual({
-                    'package.js': $package
-                }),
-                postBuild
-            ],
-            external: opts.nodeExternalDeps
-        }
-    ];
+            set(
+                msg: NodeMessage,
+                typedInput: TypedInputValue,
+                value: any,
+                types: SetterTypes = builtinTypes
+            ) {
+                return setByTypedInput.call(nodeVars.get(node)!, msg, typedInput, value, types);
+            }
+        });
+    }
+    return nodeVars.get(node)!;
 }

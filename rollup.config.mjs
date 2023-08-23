@@ -7,13 +7,12 @@ import fs from 'fs';
 
 const pkg = JSON.parse(fs.readFileSync('./package.json', 'utf8'));
 
+const input = {
+    index: 'src/index.ts',
+    rollup: 'src/rollup.ts'
+};
+
 const opts = {
-    input: {
-        index: 'src/index.ts',
-        internal: 'src/internal.ts',
-        runtime: 'src/runtime.ts',
-        tray: 'src/tray.ts'
-    },
     plugins: [
         typescript(),
         resolve(),
@@ -29,6 +28,11 @@ const opts = {
 export default [
     {
         ...opts,
+        input: {
+            ...input,
+            internal: 'src/internal.ts',
+            runtime: 'src/runtime.ts'
+        },
         output: {
             dir: 'dist',
             format: 'esm',
@@ -39,6 +43,7 @@ export default [
     },
     {
         ...opts,
+        input,
         output: {
             dir: 'dist',
             format: 'cjs',

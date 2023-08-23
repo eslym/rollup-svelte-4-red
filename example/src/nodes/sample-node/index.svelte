@@ -26,6 +26,8 @@
                 animal: {
                     value: ''
                 },
+                // The value for typed input is an object with type and value,
+                // use `TypedInput.validator` to create a validator for it.
                 typed: {
                     value: {
                         type: 'msg',
@@ -41,7 +43,8 @@
                         bool: true,
                         json: true,
                         node: true
-                    }
+                    },
+                    validate: TypedInput.validator('typed')
                 },
                 _version: {
                     value: version
@@ -159,9 +162,16 @@
 </script>
 
 <script>
-    import { Input, Icon, Row, AutoComplete, tooltip, TypedInput } from '@eslym/rs4r/components';
+    import {
+        Input,
+        Icon,
+        Row,
+        AutoComplete,
+        tooltip,
+        TypedInput,
+        openTypeEditor
+    } from '@eslym/rs4r/components';
     import { JSONEditor } from 'svelte-jsoneditor';
-    import { openTypeEditor } from '@eslym/rs4r/tray';
 
     export let node;
 

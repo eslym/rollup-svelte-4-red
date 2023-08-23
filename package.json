@@ -1,6 +1,6 @@
 {
     "name": "@eslym/rs4r",
-    "version": "1.2.0-beta.3",
+    "version": "2.0.0",
     "description": "Build svelte for Node-RED with rollup",
     "type": "module",
     "main": "dist/index.mjs",
@@ -50,19 +50,17 @@
             "import": "./dist/index.mjs",
             "types": "./index.d.ts"
         },
+        "./rollup": {
+            "require": "./dist/rollup.cjs",
+            "import": "./dist/rollup.mjs",
+            "types": "./index.d.ts"
+        },
         "./internal": {
-            "require": "./dist/internal.cjs",
             "import": "./dist/internal.mjs",
             "types": "./index.d.ts"
         },
         "./runtime": {
-            "require": "./dist/runtime.cjs",
             "import": "./dist/runtime.mjs",
-            "types": "./index.d.ts"
-        },
-        "./tray": {
-            "require": "./dist/tray.cjs",
-            "import": "./dist/tray.mjs",
             "types": "./index.d.ts"
         },
         "./components": {

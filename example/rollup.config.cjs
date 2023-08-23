@@ -1,4 +1,4 @@
-const rs4r = require('@eslym/rs4r');
+const rs4r = require('@eslym/rs4r/rollup');
 const json = require('@rollup/plugin-json');
 
 module.exports = rs4r({

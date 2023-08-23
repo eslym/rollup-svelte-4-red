@@ -129,7 +129,7 @@ export const json = {
         } catch (err) {}
         RED.editor.editJSON({
             value: value,
-            stateId: RED.editor.generateViewStateId('typedInput', undefined, 'json'),
+            stateId: RED.editor.generateViewStateId('typedInput', void 0, 'json'),
             focus: true,
             complete: function (v) {
                 let value = v;
@@ -147,7 +147,7 @@ export const re = {
     icon: { maskSvg: 'red/images/typedInput/re.svg' }
 };
 
-export const timestamp = {
+export const date = {
     label: 'timestamp',
     icon: { fa4: 'clock-o' },
     hasValue: false
@@ -167,7 +167,7 @@ export const jsonata = {
     expand: function (value, update) {
         RED.editor.editExpression({
             value: value.replace(/\t/g, '\n'),
-            stateId: RED.editor.generateViewStateId('typedInput', undefined, 'jsonata'),
+            stateId: RED.editor.generateViewStateId('typedInput', void 0, 'jsonata'),
             focus: true,
             complete: function (v) {
                 update(v.replace(/\n/g, '\t'));
@@ -182,7 +182,7 @@ export const bin = {
     expand: function (value, update) {
         RED.editor.editBuffer({
             value: value,
-            stateId: RED.editor.generateViewStateId('typedInput', undefined, 'bin'),
+            stateId: RED.editor.generateViewStateId('typedInput', void 0, 'bin'),
             focus: true,
             complete: function (v) {
                 update(v);

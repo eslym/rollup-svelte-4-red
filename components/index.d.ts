@@ -1,4 +1,5 @@
-import { SvelteComponent } from 'svelte';
+import { EditorNodeInstance } from 'node-red';
+import { SvelteComponent, ComponentType } from 'svelte';
 import { Writable } from 'svelte/store';
 
 export type IconSource = { fa4: FronAwesome4Icons };
@@ -23,12 +24,14 @@ export interface MenuOptions {
 }
 
 export interface Selection {
-    component: typeof SvelteComponent;
-    value: any;
+    component?: ComponentType;
+    label?: string;
+    icon?: IconSource;
+    value: string;
 }
 
 export interface SelectOption {
-    component?: typeof SvelteComponent;
+    component?: ComponentType;
     icon?: IconSource;
     label: string;
     value: string;
@@ -37,13 +40,13 @@ export interface SelectOption {
 export interface SelectionOption {
     shown: Writable<boolean>;
     focus: Writable<() => void>;
-    component?: typeof SvelteComponent;
+    component?: ComponentType;
     onSelect: (value: any) => void;
     options: Writable<(Selection | string)[]>;
 }
 
 export interface AutoCompleteSuggestion {
-    component: typeof SvelteComponent;
+    component: ComponentType;
     value: string;
     source?: string[];
 }
@@ -53,7 +56,7 @@ export interface TypeDefinition {
     icon?: IconSource;
     hasValue?: boolean;
     options?: (SelectOption | string)[];
-    viewLabel?: typeof SvelteComponent;
+    viewLabel?: ComponentType;
     validate?: (value: string) => boolean;
     expand?: (value: string, update: (val: string) => void) => void;
 }
@@ -147,6 +150,10 @@ export class TypedInput extends SvelteComponent<
     {}
 > {
     static builtinTypes: Record<BuiltInTypes, TypeDefinition>;
+    static validator(prop: string): (this: EditorNodeInstance, value: any) => boolean;
+    static validator(
+        types: Record<string, TypeDefinition | true> | BuiltInTypes[]
+    ): (value: any) => boolean;
 }
 
 export class Icon extends SvelteComponent<
@@ -179,7 +186,13 @@ export function menu(element: HTMLElement, options: MenuOptions): { destroy(): v
 export function onresize(
     element: HTMLElement,
     callback: (entry: ResizeObserverEntry) => void
-): { destroy(): void };
+): { update(callback: (entry: ResizeObserverEntry) => void): void; destroy(): void };
+
+type IntersecActionOptions = (entry: IntersectionObserverEntry) =>
+    | void
+    | (IntersectionObserverInit & {
+          callback: (entry: IntersectionObserverEntry) => void;
+      });
 
 /**
  * Wrapper for IntersectionObserver
@@ -188,12 +201,63 @@ export function onresize(
  */
 export function onintersect(
     element: HTMLElement,
-    options: (entry: IntersectionObserverEntry) =>
-        | void
-        | (IntersectionObserverInit & {
-              callback: (entry: IntersectionObserverEntry) => void;
-          })
-): { destroy(): void };
+    options: IntersecActionOptions
+): {
+    update(options: IntersecActionOptions): void;
+    destroy(): void;
+};
+
+interface SelectionActionOptions {
+    focus?: Writable<boolean>;
+
+    shown?: Writable<boolean>;
+
+    /**
+     * Recommended to passthrough the value of `getContext()` from component
+     */
+    context?: Map<any, any>;
+
+    options?: Writable<(Selection | string)[]>;
+
+    onSelect?: (selected: Selection) => void;
+
+    component?: ComponentType;
+
+    class?: string | Record<string, boolean>;
+}
+
+export function selection(
+    element: HTMLElement,
+    options
+): { update(options: SelectionActionOptions): void; destroy(): void };
+
+export interface OpenTrayOptions<T extends Record<string, any>> {
+    props?: T;
+    binding?: {
+        [K in keyof T]: (value: T[K]) => void;
+    };
+    context?: Map<any, any>;
+    on?: Record<string, (event: CustomEvent) => void>;
+    title?: string;
+    width?: string | number;
+    maximized?: boolean;
+    buttons?: {
+        text: string;
+        class?: string;
+        click?: () => void;
+    }[];
+    show?: () => void;
+}
+
+export function openTray<T extends Record<string, any>>(
+    component: ComponentType,
+    options: OpenTrayOptions<T>
+): void;
+
+export function openTypeEditor<T extends Record<string, any>>(
+    component: ComponentType,
+    options: OpenTrayOptions<T>
+): void;
 
 type FronAwesome4Icons = [
     'address-book',
@@ -994,7 +1058,7 @@ type BuiltInTypes = [
     'bool',
     'json',
     're',
-    'timestamp',
+    'date',
     'jsonata',
     'bin',
     'node',

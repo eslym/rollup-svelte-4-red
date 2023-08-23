@@ -1,3 +1,42 @@
+<script context="module">
+    function mapTypes(types) {
+        if (Array.isArray(types)) {
+            return Object.fromEntries(types.map((type) => [type, builtinTypes[type]]));
+        }
+        return Object.fromEntries(
+            Object.entries(types)
+                .map(([key, type]) => {
+                    switch (typeof type) {
+                        case 'object':
+                            return [key, type];
+                        case 'string':
+                            return [key, builtinTypes[type]];
+                        default:
+                            if (type) {
+                                return [key, builtinTypes[key]];
+                            }
+                            return false;
+                    }
+                })
+                .filter(Boolean)
+        );
+    }
+
+    export function validator(prop) {
+        /** @type {(this: import('node-red').EditorNodeInstance, value: any)=>boolean} */
+        return function (value) {
+            const types = mapTypes(
+                typeof prop === 'string' ? this._def.defaults[prop].types : prop
+            );
+            if (!(value?.type in types)) {
+                return false;
+            }
+            const validate = types[value.type].validate;
+            return validate ? validate.call(this, value.value) : true;
+        };
+    }
+</script>
+
 <script>
     import * as builtinTypes from './typed-input/builtin-types.mjs';
 
@@ -37,23 +76,7 @@
         _focus = focus;
     }
 
-    $: _types = Object.fromEntries(
-        Object.entries(types)
-            .map(([key, type]) => {
-                switch (typeof type) {
-                    case 'object':
-                        return [key, type];
-                    case 'string':
-                        return [key, builtinTypes[type]];
-                    default:
-                        if (type) {
-                            return [key, builtinTypes[key]];
-                        }
-                        return false;
-                }
-            })
-            .filter(Boolean)
-    );
+    $: _types = mapTypes(types);
 
     $: selectedType = _types[$value.type];
 
