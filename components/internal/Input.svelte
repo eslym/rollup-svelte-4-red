@@ -25,7 +25,7 @@
             on:keyup
             on:input
         />
-        <span>{placeholder}</span>
+        {#if placeholder}<span>{placeholder}</span>{/if}
     </label>
 {:else if type === 'password'}
     <input

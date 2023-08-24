@@ -8,8 +8,8 @@
     import Icon from './Icon.svelte';
 
     export let prop = undefined;
-    export let label = undefined;
-    export let placeholder = undefined;
+    export let label = '';
+    export let placeholder = '';
     export let type = 'text';
     export let config = false;
     export let value = undefined;
