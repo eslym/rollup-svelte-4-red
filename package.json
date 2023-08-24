@@ -1,6 +1,6 @@
 {
     "name": "@eslym/rs4r",
-    "version": "2.0.5",
+    "version": "2.0.6",
     "description": "Build svelte for Node-RED with rollup",
     "type": "module",
     "main": "dist/index.mjs",
