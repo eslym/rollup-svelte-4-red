@@ -250,14 +250,20 @@ export interface OpenTrayOptions<T extends Record<string, any> | undefined> {
     show?: () => void;
 }
 
+type ComponentProps<C extends ComponentType> = C extends {
+    new (options: infer O extends ComponentConstructorOptions): any;
+}
+    ? O['props']
+    : never;
+
 export function openTray<C extends ComponentType>(
     component: C,
-    options: OpenTrayOptions<ComponentConstructorOptions<C>['props']>
+    options: OpenTrayOptions<ComponentProps<C>>
 ): void;
 
 export function openTypeEditor<C extends ComponentType>(
     component: C,
-    options: OpenTrayOptions<ComponentConstructorOptions<C>['props']>
+    options: OpenTrayOptions<ComponentProps<C>>
 ): void;
 
 type FronAwesome4Icons = [
