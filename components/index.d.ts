@@ -234,7 +234,7 @@ export function selection(
 export interface OpenTrayOptions<T extends Record<string, any>> {
     props?: T;
     binding?: {
-        [K in keyof T]: (value: T[K]) => void;
+        [K in keyof T]?: (value: T[K]) => void;
     };
     context?: Map<any, any>;
     on?: Record<string, (event: CustomEvent) => void>;
@@ -242,6 +242,7 @@ export interface OpenTrayOptions<T extends Record<string, any>> {
     width?: string | number;
     maximized?: boolean;
     buttons?: {
+        id?: string;
         text: string;
         class?: string;
         click?: () => void;
