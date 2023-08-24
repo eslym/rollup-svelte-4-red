@@ -208,7 +208,7 @@ export function onintersect(
 };
 
 interface SelectionActionOptions {
-    focus?: Writable<boolean>;
+    focus?: Writable<() => void>;
 
     shown?: Writable<boolean>;
 
