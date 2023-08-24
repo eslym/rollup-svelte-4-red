@@ -1,5 +1,5 @@
 import { EditorNodeInstance } from 'node-red';
-import { SvelteComponent, ComponentType } from 'svelte';
+import { SvelteComponent, ComponentType, ComponentConstructorOptions } from 'svelte';
 import { Writable } from 'svelte/store';
 
 export type IconSource = { fa4: FronAwesome4Icons };
@@ -228,10 +228,10 @@ interface SelectionActionOptions {
 
 export function selection(
     element: HTMLElement,
-    options
+    options: SelectionActionOptions
 ): { update(options: SelectionActionOptions): void; destroy(): void };
 
-export interface OpenTrayOptions<T extends Record<string, any>> {
+export interface OpenTrayOptions<T extends Record<string, any> | undefined> {
     props?: T;
     binding?: {
         [K in keyof T]?: (value: T[K]) => void;
@@ -250,14 +250,14 @@ export interface OpenTrayOptions<T extends Record<string, any>> {
     show?: () => void;
 }
 
-export function openTray<T extends Record<string, any>>(
-    component: ComponentType,
-    options: OpenTrayOptions<T>
+export function openTray<C extends ComponentType>(
+    component: C,
+    options: OpenTrayOptions<ComponentConstructorOptions<C>['props']>
 ): void;
 
-export function openTypeEditor<T extends Record<string, any>>(
-    component: ComponentType,
-    options: OpenTrayOptions<T>
+export function openTypeEditor<C extends ComponentType>(
+    component: C,
+    options: OpenTrayOptions<ComponentConstructorOptions<C>['props']>
 ): void;
 
 type FronAwesome4Icons = [
