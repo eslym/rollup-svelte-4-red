@@ -79,7 +79,7 @@ export class Input extends SvelteComponent<
         placeholder?: string;
         type?: string;
         config?: string;
-        value?: string;
+        value?: string | boolean;
         inline?: string;
         disabled?: boolean;
         required?: boolean;
