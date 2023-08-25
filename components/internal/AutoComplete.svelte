@@ -90,9 +90,9 @@
         _resolving = true;
         _needResolve = false;
         $_suggestions = (await suggestions(value)).map((o) => ({
+            component: AutoCompleteSuggestion,
             ...(typeof o === 'string' ? { value: o } : o),
-            highlighted: value,
-            component: AutoCompleteSuggestion
+            highlighted: value
         }));
         if ($_suggestions.length == 0) $menuShown = false;
         _resolving = false;

@@ -1,8 +1,8 @@
 <script>
     export let option;
 
-    $: highlighted = option.value.slice(0, option.highlighted.length);
-    $: rest = option.value.slice(option.highlighted.length);
+    $: highlighted = highlighted ? option.value.slice(0, option.highlighted.length) : '';
+    $: rest = highlighted ? option.value.slice(option.highlighted.length) : option.value;
 
     $: matchedSource = option.matchedSource ?? [];
 </script>

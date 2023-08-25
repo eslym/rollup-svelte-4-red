@@ -2,6 +2,8 @@ import { EditorNodeInstance } from 'node-red';
 import { SvelteComponent, ComponentType, ComponentConstructorOptions } from 'svelte';
 import { Writable } from 'svelte/store';
 
+type Awaitable<T> = T | Promise<T>;
+
 export type IconSource = { fa4: FronAwesome4Icons };
 
 export interface MenuOptions {
@@ -45,11 +47,18 @@ export interface SelectionOption {
     options: Writable<(Selection | string)[]>;
 }
 
-export interface AutoCompleteSuggestion {
-    component: ComponentType;
-    value: string;
-    source?: string[];
-}
+export type AutoCompleteSuggestion<C extends ComponentType = never> = C extends never
+    ?
+          | {
+                value: string;
+                source?: string[];
+            }
+          | string
+    : {
+          component: C;
+          value: string;
+          [key: string]: any;
+      };
 
 export interface TypeDefinition {
     label: string;
@@ -59,6 +68,9 @@ export interface TypeDefinition {
     viewLabel?: ComponentType;
     validate?: (value: string) => boolean;
     expand?: (value: string, update: (val: string) => void) => void;
+    suggestions?:
+        | AutoCompleteSuggestion[]
+        | ((value: string) => Awaitable<AutoCompleteSuggestion[]>);
 }
 
 export class Row extends SvelteComponent<
@@ -112,9 +124,9 @@ export class AutoComplete extends SvelteComponent<
         required?: boolean;
         novalidate?: boolean;
         class?: string | Record<string, boolean>;
-        suggestions:
-            | (Selection | string)[]
-            | ((value: string) => (Selection | string)[] | Promise<(Selection | string)[]>);
+        suggestions?:
+            | AutoCompleteSuggestion[]
+            | ((value: string) => Awaitable<AutoCompleteSuggestion[]>);
     },
     {
         change: Event;
