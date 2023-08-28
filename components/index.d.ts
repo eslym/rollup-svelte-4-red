@@ -91,8 +91,8 @@ export class Input extends SvelteComponent<
         placeholder?: string;
         type?: string;
         config?: string;
-        value?: string | boolean;
-        inline?: string;
+        value?: string | boolean | number;
+        inline?: boolean;
         disabled?: boolean;
         required?: boolean;
         novalidate?: boolean;
@@ -119,7 +119,7 @@ export class AutoComplete extends SvelteComponent<
         label?: string;
         placeholder?: string;
         value?: string;
-        inline?: string;
+        inline?: boolean;
         disabled?: boolean;
         required?: boolean;
         novalidate?: boolean;
@@ -147,7 +147,7 @@ export class TypedInput extends SvelteComponent<
         label?: string;
         placeholder?: string;
         value?: string;
-        inline?: string;
+        inline?: boolean;
         disabled?: boolean;
         required?: boolean;
         novalidate?: boolean;

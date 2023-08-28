@@ -109,3 +109,10 @@
         on:input
     />
 {/if}
+
+<style>
+    input[type='checkbox'] {
+        width: auto;
+        margin: 0;
+    }
+</style>
