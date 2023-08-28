@@ -86,6 +86,27 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                 );
             }
 
+            instance.$$.on_destroy.push(
+                nodeStore.subscribe(($node: any) => {
+                    let validState = true;
+                    for (const key of Object.keys(node._def.defaults || {})) {
+                        const def = node._def.defaults[key];
+                        if (def.required && !$node[key]) {
+                            validState = false;
+                            break;
+                        }
+                        if (def.validate && !def.validate.call($node, $node[key])) {
+                            validState = false;
+                            break;
+                        }
+                    }
+                    if (validState !== $node.valid) {
+                        $node.valid = validState;
+                        nodeStore.set($node);
+                    }
+                })
+            );
+
             nodeEditor.set(node, instance);
 
             target.style.width = minWidth;
@@ -110,6 +131,7 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
         }
         if (nodeData.has(node)) {
             const clone = nodeData.get(node);
+            node.valid = node.valid && clone.valid;
             nodeData.delete(node);
             clone._version = pack.version;
             let updated = false;

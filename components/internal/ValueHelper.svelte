@@ -3,6 +3,7 @@
     import { writable, derived, get } from 'svelte/store';
     import { editingNodeContextKey } from '@eslym/rs4r/runtime';
     import isEqual from 'lodash.isequal';
+    import { propWritable } from './utils.mjs';
 
     export let prop = undefined;
     export let type = undefined;
@@ -22,6 +23,8 @@
 
     let _cleanup = new Set();
     let state = undefined;
+
+    let _skipBound = false;
 
     const editingNode = getContext(editingNodeContextKey) ?? writable(undefined);
 
@@ -74,7 +77,10 @@
             _cleanup.add(
                 _value.subscribe((val) => {
                     validateValue(val);
-                    if (isEqual(value, val)) return;
+                    if (_skipBound) {
+                        _skipBound = false;
+                        return;
+                    }
                     value = val;
                 })
             );
@@ -95,24 +101,16 @@
                 if (!['password', 'text', 'textarea'].includes(type)) {
                     _type = 'text';
                 }
-                _value = writable($editingNode.credentials[prop]);
+                _value = propWritable(editingNode, ['credentials', prop]);
                 _cleanup.add(
                     _value.subscribe((v) => {
                         validateValue(v, _propDef.validate);
-                        if (isEqual($editingNode.credentials[prop], v)) return;
-                        $editingNode.credentials[prop] = v;
-                    })
-                );
-                _cleanup.add(
-                    editingNode.subscribe((node) => {
-                        if (isEqual(node.credentials[prop], get(_value))) return;
-                        _value.set(node.credentials[prop]);
+                        value = v;
                     })
                 );
                 return;
             }
-            let val = $editingNode.credentials[prop];
-            let _val = writable(val);
+            let _val = propWritable(editingNode, ['credentials', prop]);
             let _display = derived(_val, (v) => {
                 if (typeof v === 'string') {
                     return v;
@@ -128,32 +126,18 @@
             _cleanup.add(
                 _val.subscribe((v) => {
                     validateValue(v, _propDef.validate);
-                    if (isEqual($editingNode.credentials[prop], v)) return;
-                    $editingNode.credentials[prop] = v;
                     $editingNode.credentials[`has_${prop}`] = !!v;
+                    value = v;
                 })
             );
             _cleanup.add(_display.subscribe((v) => validateValue(v, _propDef.validate)));
-            _cleanup.add(
-                editingNode.subscribe((node) => {
-                    if (isEqual($editingNode.credentials[prop], get(_val))) return;
-                    _val.set(node.credentials[prop]);
-                })
-            );
             return;
         }
-        _value = writable($editingNode[prop]);
+        _value = propWritable(editingNode, [prop]);
         _cleanup.add(
             _value.subscribe((v) => {
                 validateValue(v, _propDef.validate);
-                if (isEqual($editingNode[prop], v)) return;
-                $editingNode[prop] = v;
-            })
-        );
-        _cleanup.add(
-            editingNode.subscribe((node) => {
-                if (isEqual(node[prop], get(_value))) return;
-                _value.set(node[prop]);
+                value = v;
             })
         );
         _config = 'type' in _propDef ? _propDef.type : false;
@@ -161,8 +145,9 @@
 
     $: sync(prop, type, config, required);
 
-    $: if (_bindVal && !isEqual(value, $_value)) {
+    $: if (_bindVal) {
         $_value = value;
+        _skipBound = true;
     }
 
     function cleanup() {
