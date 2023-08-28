@@ -90,7 +90,8 @@
 
     $: $selectionOptions = Object.values(valueMap).map((v) => ({
         component,
-        ...v
+        ...v,
+        selected: v.value === value
     }));
 
     $: selectedOption = valueMap[value];

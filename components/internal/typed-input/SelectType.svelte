@@ -55,19 +55,26 @@
         }
     }
 
-    $: $selectionOptions = Object.entries(types).map(([v, t]) => ({
-        component: RenderType,
-        value: v,
-        type: t
-    }));
-
-    $: if (!(type in types)) {
-        type = $selectionOptions[0].value;
-    }
+    $: refresh(types, type);
 
     $: selectedType = types[type];
 
     $: focusState = isFocused || $menuShown;
+
+    function refresh() {
+        $selectionOptions = Object.entries(types).map(([v, t]) => ({
+            component: RenderType,
+            value: v,
+            type: t
+        }));
+        if (!(type in types)) {
+            type = $selectionOptions[0].value;
+        }
+        const selectedIndex = $selectionOptions.map((o) => o.value).indexOf(type);
+        if (selectedIndex !== -1) {
+            $selectionOptions[selectedIndex].selected = true;
+        }
+    }
 </script>
 
 <button
