@@ -109,10 +109,11 @@
     on:focusout={focusOut}
     bind:this={container}
 >
-    {#each $options as option}
+    {#each $options as option (option.value)}
         <button
             type="button"
             tabindex="-1"
+            class:selected={option.selected}
             on:click={() => onSelect?.(option)}
             on:keydown={selectionKeydown}
         >
@@ -162,5 +163,9 @@
         background-color: var(--red-ui-menuHoverBackground);
         border: none;
         outline: none;
+    }
+    .rs4r-panel > button.selected {
+        color: var(--red-ui-menuActiveColor);
+        background-color: var(--red-ui-menuActiveBackground);
     }
 </style>

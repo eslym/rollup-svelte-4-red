@@ -25,26 +25,19 @@ export interface MenuOptions {
     onselect?: (value: any, target: HTMLElement) => void;
 }
 
-export interface Selection {
+export interface SelectOption {
     component?: ComponentType;
     label?: string;
     icon?: IconSource;
+    selected?: boolean;
     value: string;
 }
 
-export interface SelectOption {
+export interface TypedInputSelectOption extends SelectOption {
     component?: ComponentType;
     icon?: IconSource;
     label: string;
     value: string;
-}
-
-export interface SelectionOption {
-    shown: Writable<boolean>;
-    focus: Writable<() => void>;
-    component?: ComponentType;
-    onSelect: (value: any) => void;
-    options: Writable<(Selection | string)[]>;
 }
 
 export type AutoCompleteSuggestion<C extends ComponentType = never> = C extends never
@@ -64,7 +57,7 @@ export interface TypeDefinition {
     label: string;
     icon?: IconSource;
     hasValue?: boolean;
-    options?: (SelectOption | string)[];
+    options?: (TypedInputSelectOption | string)[];
     viewLabel?: ComponentType;
     validate?: (value: string) => boolean;
     expand?: (value: string, update: (val: string) => void) => void;
@@ -146,7 +139,10 @@ export class TypedInput extends SvelteComponent<
         icon?: IconSource;
         label?: string;
         placeholder?: string;
-        value?: string;
+        value?: {
+            type: string;
+            value: string;
+        };
         inline?: boolean;
         disabled?: boolean;
         required?: boolean;
@@ -229,9 +225,9 @@ interface SelectionActionOptions {
      */
     context?: Map<any, any>;
 
-    options?: Writable<(Selection | string)[]>;
+    options?: Writable<(SelectOption | string)[]>;
 
-    onSelect?: (selected: Selection) => void;
+    onSelect?: (selected: SelectOption) => void;
 
     component?: ComponentType;
 
