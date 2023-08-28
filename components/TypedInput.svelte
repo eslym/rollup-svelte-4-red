@@ -60,6 +60,7 @@
                 }}
                 {placeholder}
                 {disabled}
+                {novalidate}
                 on:change
                 on:focus
                 on:blur

@@ -1,8 +1,7 @@
 <script>
     import { getContext, onDestroy } from 'svelte';
-    import { writable, derived, get } from 'svelte/store';
+    import { writable, derived } from 'svelte/store';
     import { editingNodeContextKey } from '@eslym/rs4r/runtime';
-    import isEqual from 'lodash.isequal';
     import { propWritable } from './utils.mjs';
 
     export let prop = undefined;
@@ -31,6 +30,7 @@
     function validateValue(v, validator) {
         if (novalidate) {
             _invalid = false;
+            return;
         }
         let req = false;
         if (
