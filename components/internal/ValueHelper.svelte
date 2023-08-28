@@ -23,8 +23,6 @@
     let _cleanup = new Set();
     let state = undefined;
 
-    let _skipBound = false;
-
     const editingNode = getContext(editingNodeContextKey) ?? writable(undefined);
 
     function validateValue(v, validator) {
@@ -76,11 +74,6 @@
             validateValue(value);
             _cleanup.add(
                 _value.subscribe((val) => {
-                    validateValue(val);
-                    if (_skipBound) {
-                        _skipBound = false;
-                        return;
-                    }
                     value = val;
                 })
             );
@@ -147,7 +140,6 @@
 
     $: if (_bindVal) {
         $_value = value;
-        _skipBound = true;
     }
 
     function cleanup() {
