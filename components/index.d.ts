@@ -151,7 +151,7 @@ export class TypedInput extends SvelteComponent<
         disabled?: boolean;
         required?: boolean;
         novalidate?: boolean;
-        types: Record<string, TypeDefinition | true> | BuiltInTypes[];
+        types?: Record<string, TypeDefinition | true> | BuiltInTypes[];
     },
     {
         change: Event;
