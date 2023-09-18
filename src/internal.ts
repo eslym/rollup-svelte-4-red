@@ -58,7 +58,10 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                 if (options.minWidth) minWidth = options.minWidth;
             }
             if (!nodeData.has(node)) {
-                const cloned = cloneDeep(node);
+                const n = Object.assign({}, node);
+                delete n.infoEditor;
+                const cloned = cloneDeep(n);
+                n.infoEditor = node.infoEditor;
                 nodeData.set(node, cloned);
             }
             const cloned = nodeData.get(node);
