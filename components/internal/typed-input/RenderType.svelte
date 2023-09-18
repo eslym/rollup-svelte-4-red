@@ -17,7 +17,7 @@
                 }}
             />
         {/if}
-        {#if selection || !type.icon}
+        {#if selection || !type.icon || !(type.hasValue ?? true)}
             <span class:rs4r-typedinput-padding={selection && !type.icon}>{type.label}</span>
         {/if}
     </div>

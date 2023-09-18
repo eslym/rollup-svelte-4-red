@@ -4,6 +4,7 @@ import type { ComponentType, SvelteComponent } from 'svelte';
 import isEqual from 'lodash.isequal';
 import { writable } from 'svelte/store';
 import { editingNodeContextKey } from './runtime';
+import cloneDeep from 'lodash.clonedeep';
 
 declare global {
     interface Window {
@@ -57,7 +58,7 @@ export function registerHelper(pack: any, entries: Entries, name: string) {
                 if (options.minWidth) minWidth = options.minWidth;
             }
             if (!nodeData.has(node)) {
-                const cloned = window.$.extend(true, {}, node);
+                const cloned = cloneDeep(node);
                 nodeData.set(node, cloned);
             }
             const cloned = nodeData.get(node);
